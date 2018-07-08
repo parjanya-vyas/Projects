@@ -1,0 +1,128 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_floating_material_dark"
+    tools:context="com.example.parjanya.thedeathlyhallows.NewQuiz">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="25">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Question number"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:id="@+id/question_number"
+            android:layout_weight="40"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Question Body"
+            android:textColor="#FF0000"
+            android:textSize="20sp"
+            android:id="@+id/question_text"
+            android:layout_weight="20"/>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time: "
+            android:textColor="#AAAAAA"
+            android:textSize="18sp"
+            android:id="@+id/time"
+            android:layout_weight="40"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_weight="50">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Option 1"
+            style="@android:style/Widget.Button"
+            android:id="@+id/button_option_1"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Option 2"
+            style="@android:style/Widget.Button"
+            android:id="@+id/button_option_2"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Option 3"
+            style="@android:style/Widget.Button"
+            android:id="@+id/button_option_3"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Option 4"
+            style="@android:style/Widget.Button"
+            android:id="@+id/button_option_4"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        style="?android:attr/buttonBarStyle"
+        android:layout_weight="10">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:background="@color/background_floating_material_dark"
+            android:layout_weight="50"
+            android:text="Display Hint"
+            android:textColor="#FFFFFF"
+            android:id="@+id/display_hint"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:background="@color/background_floating_material_dark"
+            android:layout_weight="50"
+            android:text="Pause"
+            android:textColor="#FFFFFF"
+            android:id="@+id/pause_timer"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_weight="15">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hint"
+            android:textColor="#AAAAAA"
+            android:textSize="18sp"
+            android:id="@+id/hint_text"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+<!-- From: file:/F:/Android%20Studio%20Projects/Major%20Project/TheDeathlyHallows2/app/src/main/res/layout/activity_new_quiz.xml -->

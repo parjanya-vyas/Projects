@@ -1,0 +1,22 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.parjanya.thedeathlyhallows.WebActivity"
+    android:background="@color/background_floating_material_dark"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Website"
+        android:textSize="20sp"
+        android:textColor="#FF0000"
+        android:gravity="center"/>
+
+    <WebView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/web_site_area"/>
+
+</LinearLayout>
+<!-- From: file:/F:/Android%20Studio%20Projects/Major%20Project/TheDeathlyHallows2/app/src/main/res/layout/activity_web.xml -->

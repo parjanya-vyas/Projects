@@ -1,0 +1,104 @@
+<html>
+<head>
+<title>Decryption - Rail Fence</title>
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<script type="text/javascript">
+
+function setCharAt(str,index,chr) {
+	if(index > str.length-1) return str;
+	return str.substr(0,index) + chr + str.substr(index+1);
+}
+
+	function encrypt()
+	{
+		var pt=document.getElementById("plaintext");//.value.toLowerCase();
+		var ct=document.getElementById("ciphertext");//.value.toLowerCase();
+		var key=document.getElementById("key");
+		
+		if((!ct.value.length) || !(key.value.length))
+		{
+			if(!key.value.length)
+			{
+				alert("Key cannot be empty");
+				return false;
+			}
+			else
+			{
+				alert("Enter the Ciphertext");
+				return false;
+			}
+		}	
+		if(!pt.value.length)			//ciphertext is given
+		{
+			if(ct.value.length%2 == 0)
+			{
+				temp=ct.value;
+				for(i=(parseInt(ct.value.length)/2)-1,j=(parseInt(ct.value.length)/2)-1;i>=0;i--,j--)
+				{
+					pt.value=setCharAt(temp,j*2,temp.charAt(i));
+					temp=pt.value;
+				}
+				
+				for(i=(parseInt(ct.value.length)/2),j=1;i<(parseInt(ct.value.length));i++,j=j+2)
+				{
+					pt.value=setCharAt(pt.value,j,ct.value.charAt(i));
+					alert("temp = "+temp+ " \npt.value = " + pt.value);
+				}
+			}
+			else
+			{
+				temp=ct.value;
+				for(i=((parseInt(ct.value.length)-1)/2),j=((parseInt(ct.value.length)-1)/2);i>=0;i--,j--)
+				{
+					pt.value=setCharAt(temp,j*2,temp.charAt(i));
+					temp=pt.value;
+				}
+				for(i=((parseInt(ct.value.length)+1)/2),j=1;i<parseInt(ct.value.length);i++,j=j+2)
+				{
+					pt.value=setCharAt(pt.value,j,ct.value.charAt(i));
+				}
+			}
+		return false;
+		}
+	}
+</script>
+
+
+</head>
+<body>
+	<h1>Decryption Algorithms</h1>
+    <div class="definition">
+    <dl>
+    	<dt class=title>Vernam Cipher:</dt>
+        <ul type="disc"><li>It is a symmetric stream cipher.</li><li>In this method, each character of plaintext is logically XORed with the key.</li><li>If the key is smaller in length than the plaintext, it is repeated again.</li><li>If the key is longer than the plaintext, the extra bits are discarded.</li></ul>
+    </dl>
+    </div>
+   	<form id="input" onSubmit=" return encrypt()">
+    <table>
+  		<tr>
+        	<td>Ciphertext: </td>
+            <td><input class="typetext" id="ciphertext" type="text" maxlength="50" size="75"/></td>
+        </tr>
+        	  
+    	<tr>
+            <td>Key: </td>
+            <td><input class="typetext" id="key" type="text" maxlength="50" size="75"/></td>
+        </tr>
+        
+        <tr>
+        	<td>Plaintext: </td>
+            <td><input class="typetext" id="plaintext" type="text" maxlength="50" size="75"/ disabled></td>
+        </tr>
+        
+        <tr>
+        	<td><input type="submit" value="Decrypt" class="button"></td>
+        </tr>
+    </table>
+    </form>
+    
+    <a href="dec_rsa.html"><img src="../images/next.png" class="next"></a>
+    <a href="../index.html"><img src="../images/home-icon.png" class="home"></a>
+    <a href="dec_vernam.html"><img src="../images/back.png" class="back"></a>
+    
+</body>
+</html>

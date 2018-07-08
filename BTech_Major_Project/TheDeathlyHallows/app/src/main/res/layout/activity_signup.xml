@@ -1,0 +1,168 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_floating_material_dark"
+    tools:context="com.example.parjanya.thedeathlyhallows.SignupActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_weight="10">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#FF0000"
+            android:text="It seems"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="20sp"
+            android:textColor="#FF0000"
+            android:text="you have just installed the app"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Let us get you started!"
+            android:textColor="#FF0000"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="20">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:textColor="#FFFFFF"
+                android:text="User ID:"
+                android:textSize="18sp"
+                android:layout_weight="70"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:textColor="#FFFFFF"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uid_signup"
+                android:inputType="text"
+                android:layout_weight="30"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:textColor="#FFFFFF"
+                android:text="User Name:"
+                android:textSize="18sp"
+                android:layout_weight="70"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:textColor="#FFFFFF"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/uname_signup"
+                android:inputType="text"
+                android:layout_weight="30"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="Password:"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_weight="70"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:textColor="#FFFFFF"
+                android:layout_height="wrap_content"
+                android:id="@+id/password_signup"
+                android:inputType="textPassword"
+                android:layout_weight="30"/>
+
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/parent_gesture"
+        android:layout_weight="75"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:text="Draw a Login Gesture"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:text="You can leave it blank"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        style="?android:attr/buttonBarStyle"
+        android:layout_weight="5">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Register"
+            android:layout_weight="50"
+            android:textColor="#FFFFFF"
+            android:background="@color/background_floating_material_dark"
+            style="?android:attr/buttonBarButtonStyle"
+            android:id="@+id/register_user"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear Gesture"
+            android:background="@color/background_floating_material_dark"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_weight="50"
+            android:textColor="#FFFFFF"
+            android:id="@+id/clear_gesture"/>
+
+    </LinearLayout>
+
+</LinearLayout>

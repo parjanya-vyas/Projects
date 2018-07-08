@@ -1,0 +1,141 @@
+<html>
+<head>
+<title>Decryption - RSA</title>
+<link rel="shortcut icon" href="images/icon.ico">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<script type="text/javascript">
+
+	function gcd(a,b)
+	{
+		a=parseInt(a);
+		b=parseInt(b);
+		while(a!=b)
+		{
+			if(a>b)
+				return gcd(a-b,b);
+			else
+				return gcd(a,b-a);
+		}
+		return a;
+	}
+
+	function check_prime(a,b)
+	{
+		var i;
+		flag=0;
+		for(i=2;i<a/2;i++)
+		{
+			if(a%i==0)
+				flag++;
+		}
+		if(flag!=0)
+		{
+			if(b==0)
+				alert(a + " is not a prime number");
+			return (a);
+		}
+		return true;
+	}
+
+	function decrypt()
+	{
+		
+		var pt=document.getElementById("plaintext");//.value.toLowerCase();
+		var ct=document.getElementById("ciphertext");//.value.toLowerCase();
+		
+		if(!(ct.value.length))
+		{
+			
+				alert("Enter the Ciphertext");
+				return false;
+	
+		}
+		p=parseInt("13");
+		q=parseInt("11");
+		
+		
+		/* 		KEY GERNERATION			*/
+		
+		if(check_prime(p,0) && check_prime(q,0))
+		{
+			var n=(p*q);
+			var phi=((p-1)*(q-1));
+			var e;
+			var i;
+			for(i=2;i<phi;i++)
+			{
+				if(gcd(i,phi)==1)
+				{
+					e=i;
+					break;
+				}
+			}
+			for(i=1;i<Number.MAX_VALUE;i++)
+			{
+				if((i*e)%phi==1)
+				{
+					d=i;
+					break;
+				}
+			}
+		}
+		
+		//alert("n = "+n+"\nphi = "+phi+"\ne = "+e+"\nd = "+d);
+		
+		//ACTUAL DECRYPTION
+		/*m=parseInt("2");
+		alert("c = " + (Math.pow(m,e)%n));
+		c=(Math.pow(m,e)%n);
+		alert("m = " + (Math.pow(c,d)%n));*/
+		
+		
+		/* 	 	DECRYPTION		 */
+		
+		for(i=0;i<ct.value.length;i++)
+		{
+			temp=parseInt(ct.value.charCodeAt(i));
+			m=Math.pow(temp,d)%n;
+			pt.value=pt.value + String.fromCharCode(m);
+		}
+		return false;
+		
+		/*	http://keisan.casio.com/calculator	
+		pt= XYZ
+		p#1= 13
+		p#2= 11
+		ct= XC3*/
+	}
+</script>
+
+
+</head>
+<body>
+	<h1>Decryption Algorithms</h1>
+    <div class="definition">
+    <dl>
+    	<dt class=title>RSA Cipher:</dt>
+        
+    </dl>
+    </div>
+   	<form id="input" onSubmit=" return decrypt()">
+    <table style="position:absolute; top:350px; left:300px;">
+        <tr>
+        	<td>Ciphertext: </td>
+            <td><input class="typetext" id="ciphertext" type="text" maxlength="50" size="75" placeholder=""/></td>
+        </tr>
+    	<tr>
+        	<td>Plaintext: </td>
+            <td><input class="typetext" id="plaintext" type="text" maxlength="50" size="75" placeholder="" disabled/></td>
+        </tr>
+        <tr>
+        	<td><input type="submit" value="Decrypt" class="button" style="position:absolute;top:115px;"></td>
+        </tr>
+    </table>
+    </form>
+    
+    <a href="../index.html"><img src="../images/next.png" class="next"></a>
+    <a href="../index.html"><img src="../images/home-icon.png" class="home"></a>
+    <a href="dec_rail_fence.html"><img src="../images/back.png" class="back"></a>
+    
+</body>
+</html>

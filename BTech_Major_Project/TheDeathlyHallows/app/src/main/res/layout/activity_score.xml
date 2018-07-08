@@ -1,0 +1,191 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_floating_material_dark"
+    tools:context="com.example.parjanya.thedeathlyhallows.ScoreActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="25"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Summary"
+            android:id="@+id/summary_title"
+            android:textColor="#FF0000"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="50"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_weight="10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Score"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:id="@+id/score_points"
+                android:textSize="18sp"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_weight="10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Correct Answers"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:id="@+id/score_correct"
+                android:textSize="18sp"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_weight="10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Wrong Answers"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"
+                android:id="@+id/score_wrong"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Hints taken"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"
+                android:id="@+id/score_hint"/>
+
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="10"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Time"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:layout_weight="50"
+                android:textSize="18sp"
+                android:id="@+id/score_time"/>
+
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_weight="25"
+        android:gravity="center"
+        style="?android:attr/buttonBarStyle">
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="Home"
+            android:textColor="#FFFFFF"
+            android:layout_weight="50"
+            android:id="@+id/score_home"
+            android:background="@color/background_floating_material_dark"/>
+
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="?android:attr/buttonBarButtonStyle"
+            android:text="Share"
+            android:textColor="#FFFFFF"
+            android:layout_weight="50"
+            android:id="@+id/score_share"
+            android:background="@color/background_floating_material_dark"/>
+
+    </LinearLayout>
+
+</LinearLayout>

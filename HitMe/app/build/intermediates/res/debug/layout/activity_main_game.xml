@@ -1,0 +1,130 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainGame"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="156dp"
+        android:layout_height="157dp"
+        android:orientation="vertical"
+        android:background="#000000"
+        android:gravity="center_horizontal">
+
+        <LinearLayout
+            android:layout_width="154dp"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad1"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad2"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad3"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="154dp"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="1dp"
+            android:layout_marginBottom="1dp">
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad4"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad5"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad6"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="154dp"
+            android:layout_height="50dp"
+            android:orientation="horizontal"
+            android:layout_marginTop="1dp">
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad7"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:layout_marginEnd="1dp"
+                android:layout_marginRight="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad8"/>
+
+            <TextView
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                android:layout_marginStart="1dp"
+                android:layout_marginLeft="1dp"
+                android:background="#FFFFFF"
+                android:id="@+id/pad9"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="Start"
+        android:id="@+id/start_stop_button"/>
+
+</LinearLayout>
+<!-- From: file:/F:/Android%20Studio%20Projects/Major%20Project/HitMe/app/src/main/res/layout/activity_main_game.xml -->

@@ -1,0 +1,80 @@
+@charset "utf-8";
+/* CSS Document */
+body{
+	background-image:url(../images/enc_dec.jpg);
+	background-repeat:no-repeat;
+	background-size:100% 100%;
+}
+
+h1	{
+	color:#0F0;
+	text-align:center;
+	font-size:45px;
+	font-family:"Palatino Linotype", "Book Antiqua", Palatino, serif
+}
+
+.definition{
+	padding-top:50px;
+	padding-left:200px;
+}
+
+ul{
+	color:#FFA500;
+	font-size:22px;
+}
+
+.title{
+	font-size:50px;
+	color:#C00;
+}
+
+table{
+	position:absolute;
+	top:375px;
+	left:300px;
+	font-size:40px;
+	color:#C00;
+}
+
+.button{
+	background-color: blue;
+	font-size: 30px;
+	color: #ffffff;
+	border: hidden;
+	font-family: tahoma;
+	position:absolute;
+	top: 175px;
+	left: 350px;
+	width:150px;
+	height:50px;
+}
+
+.next{
+	position:absolute;
+	margin-top:-25;
+	margin-left:1200px;
+	height:150px;
+	width:150px; 
+}
+
+.home{
+	height:100px;
+	width:100px;
+	position: absolute;
+	margin-left:1250px;
+	margin-top:-225px;
+}
+
+.back{
+	height:150px;
+	width:150px;
+	position: absolute;
+	margin-left:0px;
+	margin-top:-25px;
+}
+
+.typetext{	
+	height:30px;
+	font-size:24px;
+	width: 550px;
+}

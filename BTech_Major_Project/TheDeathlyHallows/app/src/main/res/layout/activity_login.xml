@@ -1,0 +1,115 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_floating_material_dark"
+    tools:context="com.example.parjanya.thedeathlyhallows.LoginActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="20"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome back, Buddy!"
+            android:textColor="#FF0000"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="20"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="User ID:"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_width="match_parent"
+                android:layout_weight="70"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:textColor="#FFFFFF"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:id="@+id/uid_login"
+                android:layout_weight="30"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:text="Password:"
+                android:textColor="#FFFFFF"
+                android:textSize="18sp"
+                android:layout_width="match_parent"
+                android:layout_weight="70"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:layout_width="match_parent"
+                android:textColor="#FFFFFF"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:id="@+id/password_login"
+                android:layout_weight="30"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="50"
+        android:orientation="vertical"
+        android:id="@+id/parent_login"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Draw you Gesture here"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="10"
+        style="?android:attr/buttonBarStyle"
+        android:orientation="horizontal">
+
+        <Button
+            style="?android:attr/buttonBarButtonStyle"
+            android:textColor="#FFFFFF"
+            android:layout_width="match_parent"
+            android:background="@color/background_floating_material_dark"
+            android:layout_height="wrap_content"
+            android:id="@+id/login_button"
+            android:text="Login"/>
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,85 @@
+<html>
+<head>
+<title>Decryption - Caesar</title>
+<link rel="shortcut icon" href="images/icon.ico">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<script type="text/javascript">
+
+	function decrypt()
+	{
+		var pt=document.getElementById("plaintext");//.value.toLowerCase();
+		var ct=document.getElementById("ciphertext");//.value.toLowerCase();
+		var key=document.getElementById("key");
+		
+		if((!ct.value.length) || !(key.value.length))
+		{
+			if(!key.value.length)
+			{
+				alert("Key cannot be empty");
+				return false;
+			}
+			else
+			{
+				alert("Enter the Ciphertext");
+				return false;
+			}
+		}
+		key=parseInt(key.value);
+		
+		ct.value=ct.value.toLowerCase();
+		for(i=0;i<ct.value.length;i++)
+		{
+			if(parseInt(ct.value.charCodeAt(i)) - key < 97)
+				pt.value = pt.value + String.fromCharCode((parseInt(ct.value.charCodeAt(i))-key)+26);
+			else
+				pt.value = pt.value + String.fromCharCode((parseInt(ct.value.charCodeAt(i))-key));
+		}
+		return false;
+	}
+
+function myreload()
+{
+	location.reload();
+}
+
+</script>
+
+
+</head>
+<body>
+	<h1>Decryption Algorithms</h1>
+    <div class="definition">
+    <dl>
+    	<dt class=title>Caesar Cipher:</dt>
+        
+    </dl>
+    </div>
+   	<form id="input" onSubmit=" return decrypt()">
+    <table>
+    	<tr>
+        	<td>Ciphertext: </td>
+            <td><input class="typetext" id="ciphertext" type="text" maxlength="50" size="75" placeholder="packetwars"/></td>
+        </tr>
+ 
+        <tr>
+            <td>Key: </td>
+            <td><input class="typetext" id="key" type="number" max="25" min="-25" placeholder="2"/></td>
+        </tr>
+        
+        <tr>
+        	<td>Plaintext: </td>
+            <td><input class="typetext" id="plaintext" type="text" maxlength="50" size="75" placeholder="Click Decrypt" disabled/></td>	<!-- nyaicruypq -->
+        </tr>
+        
+        <tr>
+        	<td><input type="submit" value="Decrypt" class="button"></td>
+        </tr>
+    </table>
+    </form>
+    
+    <a href="dec_vernam.html"><img src="../images/next.png" class="next"></a>
+    <a href="../index.html"><img src="../images/home-icon.png" class="home"></a>
+    <a href="../index.html"><img src="../images/back.png" class="back"></a>
+    
+</body>
+</html>

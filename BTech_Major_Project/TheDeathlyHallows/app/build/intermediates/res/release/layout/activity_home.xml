@@ -1,0 +1,121 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_floating_material_dark"
+    tools:context="com.example.parjanya.thedeathlyhallows.HomeActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="20"
+        android:gravity="center">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center">
+        <TextView
+            android:text="Hi, "
+            android:textColor="#FF0000"
+            android:textSize="20sp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:textColor="#000000"
+            android:textSize="20sp"
+            android:textStyle="bold|italic"
+            android:id="@+id/name_home"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Let us start having fun"
+            android:textColor="#FF0000"
+            android:textSize="20sp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:layout_weight="50"
+        android:id="@+id/parent_buttons_home">
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="Start new Quiz"
+            android:id="@+id/new_quiz_button"/>
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="View Score"
+            android:id="@+id/view_score"/>
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="Rules"
+            android:id="@+id/rules_again"/>
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="Add Gesture"
+            android:id="@+id/add_gesture_button"/>
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="Log Out"
+            android:id="@+id/log_out"/>
+
+        <Button
+            android:layout_width="170dp"
+            android:layout_height="wrap_content"
+            android:text="Show Clip"
+            android:id="@+id/show_clip"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_weight="30"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keep waving the wands!"
+            android:textColor="#FF0000"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keep brewing the potions!"
+            android:textColor="#FF0000"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Keep the magic alive!"
+            android:textColor="#FF0000"
+            android:textSize="18sp"/>
+
+    </LinearLayout>
+
+</LinearLayout>
+<!-- From: file:/F:/Android%20Studio%20Projects/Major%20Project/TheDeathlyHallows2/app/src/main/res/layout/activity_home.xml -->

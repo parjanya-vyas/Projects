@@ -1,0 +1,79 @@
+div		{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;}
+body	{background-image:url(hp.jpg);
+		background-size: 100%;
+		opacity:0.6}
+h1,h2	{color:red;
+		text-align:center;}
+.sub_but{font-size:2em;
+		color:red;}
+.q_div	{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;
+		width: 800px;
+		height: 400px;
+		background-repeat:no-repeat;
+		top:104px;
+		left:300px;
+		text-align:center}
+.q_body	{background-image:url(begin_quiz.jpg);
+		background-size: 100%;
+		background-repeat: no-repeat;
+		opacity:0.6}
+.button	{position:relative;
+		top:20px;
+		background-color:red;
+		color:white;}
+th, td	{font-size:large;}
+.l1_div		{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;
+		width: 1000px;
+		height: 500px;
+		background-repeat:no-repeat;
+		top:100px;
+		left:200px;}
+.l1_body	{background-image:url(lost1.jpg);
+		background-size: 100%;
+		opacity:0.6}
+.l2_div	{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;
+		width: 1000px;
+		height: 500px;
+		background-repeat:no-repeat;
+		top:100px;
+		left:200px;}
+.l2_body{background-image:url(lost3.jpg);
+		background-size: 100%;
+		opacity:0.6}
+.logo	{position:relative;
+		top:50px;}
+.w_body	{background-image:url(won1.jpg);
+		background-size: 100%;
+		opacity:0.6}
+.sub_but{position:relative;
+		top:5px;
+		font-size:2em;
+		color:red;}
+.m_div	{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;
+		width: 850px;
+		height: 625px;
+		background-repeat:no-repeat;
+		top:30px;
+		left:250px;
+		text-align:center}
+.r_div	{position: absolute;
+		box-shadow:-10px -10px 5px #888888;
+		background-color:white;
+		width: 650px;
+		height: 400px;
+		top:100px;
+		left:350px;}
+.r_body	{background-image:url(registration.jpg);
+		background-size: 100%;
+		opacity:0.6}
+.r_table{text-align:left;}

@@ -1,0 +1,128 @@
+<html>
+<head>
+<title>Encryption - Rail Fence</title>
+<link rel="shortcut icon" href="images/icon.ico">
+<link rel="stylesheet" type="text/css" href="../css/style.css">
+<script type="text/javascript">
+
+function setCharAt(str,index,chr) {
+	if(index > str.length-1) return str;
+	return str.substr(0,index) + chr + str.substr(index+1);
+}
+
+var k=1;
+
+	function encrypt()
+	{
+		var pt=document.getElementById("plaintext");//.value.toLowerCase();
+		var ct=document.getElementById("ciphertext");//.value.toLowerCase();
+		var key=document.getElementById("key");
+
+		var initialplaintext=pt.value.slice(0);
+		
+		//alert(initialplaintext + "1");
+		if((!pt.value.length) || !(key.value.length))
+		{
+			if(!key.value.length)
+			{
+				alert("Key cannot be empty");
+				return false;
+			}
+			else
+			{
+				alert("Enter the Plaintext");
+				return false;
+			}
+		}
+			//	alert(initialplaintext + "2");
+		for(m=0;m<parseInt(key.value);m++)
+		{
+			encryptmain(pt,ct,key);
+			k++;
+			//alert(k);alert(m);
+		}
+		//alert(pt.value + "PT");
+		pt.value=initialplaintext;
+		//alert(initialplaintext + "svsg");
+		//alert(pt.value + "PT2");
+		return false;
+	}
+
+
+	function encryptmain(pt,ct,key)
+	{
+		//alert(k);
+		if(k!=1)
+		{
+			pt.value=ct.value;
+		}
+		//alert(pt.value + "\n" + ct.value + "\n" + key.value);	
+		if(pt.value.length%2 == 0)
+		{
+			temp=pt.value;
+			for(i=0,j=0;i<parseInt(pt.value.length)-1;i=i+2,j++)
+			{
+				ct.value=setCharAt(temp,j,temp.charAt(i));
+				temp=ct.value;
+			}
+			for(i=1;i<parseInt(pt.value.length);i=i+2,j++)
+			{
+				ct.value=setCharAt(ct.value,j,pt.value.charAt(i));
+			}
+		}
+		else
+		{
+			temp=pt.value;
+			for(i=0,j=0;i<parseInt(pt.value.length);i+=2,j++)
+			{
+				ct.value=setCharAt(temp,j,temp.charAt(i));
+				temp=ct.value;
+			}
+			for(i=1;i<parseInt(pt.value.length)-1;i+=2,j++)
+			{
+				ct.value=setCharAt(ct.value,j,pt.value.charAt(i));
+			}
+		}
+		//alert(pt.value + "pt");
+		//alert(initialplaintext.value + "4");
+		//alert(pt.value + "\n" + ct.value + "\n" + key.value);	
+		//alert(i);
+	}
+</script>
+
+
+</head>
+<body>
+	<h1>Encryption Algorithms</h1>
+    <div class="definition">
+    <dl>
+    	<dt class=title>Rail Fence Cipher:</dt>
+        
+    </dl>
+    </div>
+   	<form id="input" onSubmit=" return encrypt()">
+    <table>
+    	<tr>
+        	<td>Plaintext: </td>
+            <td><input class="typetext" id="plaintext" type="text" maxlength="50" size="75" placeholder="packetwars"/></td>
+        </tr>
+        <tr>
+            <td>Key: </td>
+            <td><input class="typetext" id="key" type="text" maxlength="50" size="75" placeholder="3"/></td>
+        </tr>
+        <tr>
+        	<td>Ciphertext: </td>
+            <td><input class="typetext" id="ciphertext" type="text" maxlength="50" size="75" placeholder="Click Encrypt" disabled/></td>	<!-- prawtekcas -->
+        </tr>
+        <tr>
+        	<td><input type="submit" value="Encrypt" class="button"></td>
+        </tr>
+    </table>
+    </form>
+    
+    <a href="enc_rsa.html"><img src="../images/next.png" class="next"></a>
+    <a href="../index.html"><img src="../images/home-icon.png" class="home"></a>
+    <a href="enc_vigenere.html"><img src="../images/back.png" class="back"></a>
+    
+</body>
+</html>

@@ -1,0 +1,18 @@
+<html>
+<head>
+<script type="text/javascript">
+function perform()
+{
+	document.getElementById("my_frm").submit();
+}
+</script>
+</head>
+<body>
+<form id="my_frm" action="http://harrypottertrivia.net/index.php/game_api/trivia/check_answer/format/json" method="post" onsubmit="return sub()">
+<input type="hidden" id="key" name="key" value="QTBsYmVOWE1qWEIwOGdDakY5RGNyNjhaZnJsZHdkeUhjSm5Yc1NjaUxMNXJ5dTNHKzk2TFE5NTlJdlVVejdJZUxWbERKVW5ZeDIyZlErd3NyTmZIV3c9PQ%253D%253D">
+<input type="hidden" id="aid" name="aid" value="3021">
+<input type="hidden" id="qid" name="qid" value="756">
+</form>
+<button onclick="perform()">Do it!</button>
+</body>
+</html>
