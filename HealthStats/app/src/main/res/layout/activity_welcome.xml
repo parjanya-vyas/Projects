@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_welcome"
+    android:background="@drawable/background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context="com.stats.disease.healthstats.WelcomeActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:visibility="gone"
+        android:id="@+id/welcome_progressbar_parent">
+
+        <ProgressBar
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/welcome_parent_scrollview">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/login"
+                android:background="@drawable/round_button"
+                android:text="@string/login_button_string"
+                android:id="@+id/login_signup_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/case_reports"
+                android:background="@drawable/round_button"
+                android:text="@string/report_case"
+                android:id="@+id/report_instance_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/guest_icon"
+                android:background="@drawable/round_button"
+                android:text="@string/report_as_guest"
+                android:id="@+id/report_as_guest_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/table_icon"
+                android:background="@drawable/round_button"
+                android:text="@string/previous_cases"
+                android:id="@+id/prev_case_id"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/stats"
+                android:background="@drawable/round_button"
+                android:text="@string/view_stats"
+                android:id="@+id/view_stats_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/logout"
+                android:background="@drawable/round_button"
+                android:text="@string/logout_string"
+                android:id="@+id/logout_button"/>
+
+            <Button
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/welcome_button_height"
+                android:layout_marginBottom="@dimen/welcome_button_marginBottom"
+                android:textStyle="bold"
+                android:textColor="@android:color/white"
+                android:textSize="25sp"
+                android:drawableLeft="@drawable/settings"
+                android:background="@drawable/round_button"
+                android:text="@string/change_default_server_url"
+                android:id="@+id/change_server"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

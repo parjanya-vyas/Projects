@@ -1,0 +1,23 @@
+The following sources files are present in the parent directory:
+1) server.c
+2) peer.c
+
+Make file is not compulsory for executing this program because all that is needed to be done is:
+Compile the code using "gcc server.c -o server"
+And "gcc peer.c -o peer"
+
+But in order to meet all the requirements of the assignment, a makefile is made which will delete all the Server and Peer folders created by the previous execution and make fresh copies of server and peer executables by compiling sources with gcc.
+
+Run the server by ./server followed by interface name on which you want to run the server
+
+Run the peer by ./peer <ip of server> <port of server> <interface on which peer needs to run>
+
+If you forget any of this, don't worry. Just type ./server or ./peer without any arguments and all the information needed will be displayed.
+
+All the directories and files that are neccessary are created automatically by the program. If you wish, you can delete these after ending the program. Although it is not at all neccessary and you can also keep them as it is. If you use makefile for compiling the code, unneccessary folders and file will be deleted automatically.
+
+Peer program has a menu item for exiting. To quit the server, just press ctrl+c or you can also close the terminal and kill the server process.
+
+All other neccessary information required to operate the program is prompted to the user during the program itself hence just start using the program and have fun!
+
+I hope you will like the program and enjoy the power of peer to peer system! See ya!

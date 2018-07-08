@@ -1,0 +1,88 @@
+<resources>
+    <string name="app_name">HealthStats</string>
+    <string name="login_title">Health Stats</string>
+    <string name="login_string">Login</string>
+    <string name="login_button_string">Login or Sign Up</string>
+    <string name="signup_string">Sign Up</string>
+    <string name="report_as_guest">Report as Guest</string>
+    <string name="previous_cases">Previous Cases</string>
+    <string name="view_stats">View Stats</string>
+    <string name="logout_string">Logout</string>
+    <string name="login_user_id">User ID</string>
+    <string name="check_availability">Check Availability</string>
+    <string name="userid_available">User ID is Available</string>
+    <string name="userid_not_available">User ID not Available</string>
+    <string name="login_password">Password</string>
+    <string name="confirm_password">Confirm Pass</string>
+    <string name="age_group">Age Group</string>
+    <string name="gender">Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="locality">Locality</string>
+    <string name="report_instance_title">Enter Case Details</string>
+    <string name="date">Date</string>
+    <string name="disease">Disease</string>
+    <string name="report_case">Report Case</string>
+    <string name="case_id">Case ID</string>
+    <string name="similar_case_dialog">A very similar case to what you are trying to report has already been reported on the same date. Would you still like to continue?</string>
+    <string name="ok_string">OK</string>
+    <string name="cancel_string">Cancel</string>
+    <string name="for_a_disease">For a Disease</string>
+    <string name="for_a_locality">For a Locality</string>
+    <string name="over_time">Over Time</string>
+    <string name="chart_type">Chart</string>
+    <string name="all">all</string>
+    <string name="number_of_instances">Number of Instances</string>
+    <string name="percentage">Percentage</string>
+    <string name="change_default_server_url">Change Server</string>
+    <string name="insert_new_url_message">Insert new server URL</string>
+    <string name="server_not_reachable_message">Sorry, server cannot be reached right now! Please try again later</string>
+    <string name="disease_map">Disease Map</string>
+    <string-array name="age_group_array">
+        <item>Below 10</item>
+        <item>11&#45;20</item>
+        <item>21&#45;30</item>
+        <item>31&#45;50</item>
+        <item>51&#45;65</item>
+        <item>66&#45;80</item>
+        <item>Above 80</item>
+    </string-array>
+    <string-array name="locality_array">
+        <item>Hostel 1</item>
+        <item>Hostel 2</item>
+        <item>Hostel 3</item>
+        <item>Hostel 4</item>
+        <item>Hostel 5</item>
+        <item>Hostel 6</item>
+        <item>Hostel 7</item>
+        <item>Hostel 8</item>
+        <item>Hostel 9</item>
+        <item>Hostel 10</item>
+        <item>Hostel 11</item>
+        <item>Hostel 12</item>
+        <item>Hostel 13</item>
+        <item>Hostel 14</item>
+        <item>Hostel 15</item>
+        <item>Hostel 16</item>
+    </string-array>
+    <string-array name="disease_array">
+        <item>Common Cold</item>
+        <item>Sneezing</item>
+        <item>Cough</item>
+        <item>Headache</item>
+        <item>Indigestion</item>
+        <item>Diarhoea</item>
+        <item>Constipation</item>
+        <item>Skin Alergy</item>
+        <item>Fever(Malaria)</item>
+        <item>Fever(Dengue)</item>
+        <item>Fever(Typhoid)</item>
+        <item>Fever(Unknown)</item>
+    </string-array>
+    <string-array name="chart_type_array">
+        <item>Bar Chart</item>
+        <item>Pie Chart</item>
+    </string-array>
+    <string name="title_activity_disease_map">DiseaseMap</string>
+</resources>
