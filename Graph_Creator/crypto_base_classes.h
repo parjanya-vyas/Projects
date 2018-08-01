@@ -4,7 +4,7 @@
 
 using namespace std;
 
-typedef unsigned long long DAMN_LONG;
+typedef long long DAMN_LONG;
 
 class Crypto_node {
 	public:
@@ -20,17 +20,44 @@ class Crypto_graph {
 	int num_random_vars;
 	
 	public:
-	
+
+    DAMN_LONG extended_euclidean(DAMN_LONG a, DAMN_LONG b, DAMN_LONG *x, DAMN_LONG *y) {
+        if(a==0) {
+            *x = 0;
+            *y = 1;
+            return b;
+        }
+        DAMN_LONG x1, y1;
+        DAMN_LONG gcd = extended_euclidean(b%a, a, &x1, &y1);
+
+        *x = y1 - (b/a) * x1;
+        *y = x1;
+
+        return gcd;
+    }
+
+    DAMN_LONG multiplicative_inverse(DAMN_LONG num) {
+        DAMN_LONG x, y;
+        DAMN_LONG gcd = extended_euclidean(num, field_sz, &x, &y);
+        if (gcd!=1)
+            return -1;
+        return (x % field_sz + field_sz) % field_sz;
+    }
+
 	DAMN_LONG field_plus(DAMN_LONG a, DAMN_LONG b) {
         return (a+b)%field_sz;
     }
 	
 	DAMN_LONG field_minus(DAMN_LONG a, DAMN_LONG b) {
-        return (a-b)%field_sz;
+        return (a-b+field_sz)%field_sz;
     }
 
     DAMN_LONG field_multiply(DAMN_LONG a, DAMN_LONG b) {
         return (a*b)%field_sz;
+    }
+
+    DAMN_LONG field_divide(DAMN_LONG a, DAMN_LONG b) {
+        return (a * multiplicative_inverse(b))%field_sz;
     }
     
     void init_single_node(Crypto_node *n, DAMN_LONG val[]) {

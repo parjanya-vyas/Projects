@@ -28,13 +28,14 @@ int main() {
         cin >> field_sz;
         Field_OLE_graph ole_graph(field_sz);
         DAMN_LONG side, a, b;
-        cout << "Enter <side> <val1> <val2> to get the neighbourhood. -1 to exit." << endl;
+        cout << "Enter <side> <val1> <val2> to get the neighbourhood, isomorphic cayley node and cayley neighbourhood. -1 to exit." << endl;
         cin >> side;
         if(side == -1)
             return 0;
         cin >> a >> b;
         while(side!=-1 && a!=-1 && b!=-1) {
             ole_graph.print_neighbours(a, b, side);
+            ole_graph.print_cayley_neighbours(a, b, side);
             cin >> side; 
             if(side==-1)
                 return 0;
