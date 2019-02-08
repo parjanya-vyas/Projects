@@ -1,4 +1,6 @@
 #include <iostream>
+#include <string>
+#include <stdio.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -8,12 +10,16 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "sha256.h"
+
 #define MAX_SIZE 1024
 
 using namespace std;
 
 int secure_switch = 0;
+string recent_hash;
 
+int switch_id = -1;
 int controller_port = -1;
 int controller_fd;
 
@@ -39,6 +45,8 @@ void dump_state() {
 		cout << flow_table[i][0] << "\t" << flow_table[i][1] << "\t" << flow_table[i][2] << "\t" << endl;
 	pthread_mutex_unlock(&flow_table_mutex);
 	cout << "Connected to controller at port: " << controller_port << endl;
+	if(secure_switch == 1)
+		cout << "Recent Hash: " << recent_hash << endl;
 }
 
 void close_all_sockets() {
@@ -161,6 +169,25 @@ void *connect_to_controller(void *dummy_arg) {
 				int dstn_port = strtol(token, NULL, 10);
 				cout << "Flow id: " << flow_id << " Src port: " << src_port << " Dstn port: " << dstn_port << endl;
 				add_new_flow_table_entry(flow_id, src_port, dstn_port);
+				string new_flow_rule = to_string(flow_id) + "::" + to_string(src_port) + "::" + to_string(dstn_port);
+				recent_hash = sha256(recent_hash + new_flow_rule);
+				char ack_msg[MAX_SIZE];
+				if(secure_switch == 1)
+					sprintf(ack_msg, "0::%s", recent_hash.c_str());
+				else
+					sprintf(ack_msg, "0");
+				send(controller_fd, ack_msg, sizeof ack_msg, 0);
+				break;
+			}
+			case 2: {
+				cout << "Initializing switch id..." << endl;
+				token = strtok(NULL, "::");
+				switch_id = strtol(token, NULL, 10);
+				cout << "Switch id received from controller: " << switch_id << "..." << endl;
+				if(secure_switch == 1) {
+					recent_hash = sha256(to_string(switch_id));
+					cout << "Hash calculated and initialized: " << recent_hash << endl;
+				}
 				break;
 			}
 			default: {

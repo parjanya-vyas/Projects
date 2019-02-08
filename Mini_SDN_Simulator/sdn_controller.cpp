@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 #include <stdio.h>
 #include <stdlib.h>
 #include <arpa/inet.h>
@@ -9,15 +10,20 @@
 #include <pthread.h>
 #include <unistd.h>
 
+#include "sha256.h"
+
 #define MAX_SIZE 1024
 
 using namespace std;
 
 int secure_controller = 0;
 
-pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 int listen_sockfd;
+int listening_port;
+
+pthread_mutex_t connection_mutex = PTHREAD_MUTEX_INITIALIZER;
 int p2p_connection_fds[MAX_SIZE];
+string all_hashes[MAX_SIZE];
 int num_switches_connected = 0;
 
 int flows[MAX_SIZE][2];
@@ -32,6 +38,12 @@ void dump_state() {
 	cout << "Source\tDestination" << endl;
 	for(int i=0;i<num_flows;i++)
 		cout << flows[i][0] << "\t" << flows[1] << endl;
+	if(secure_controller == 1) {
+		cout << "All hashes:" << endl;
+		cout << "Switch Id\tHash Value" << endl;
+		for(int i=0;i<num_switches_connected;i++)
+			cout << i << "\t" << all_hashes[i] << endl;
+	}
 }
 
 void close_all_sockets() {
@@ -54,8 +66,10 @@ void *start_listening(void *dummy_arg) {
 	listen_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(listen_sockfd, (struct sockaddr *) &server_addr, server_addr_sz);
 	getsockname(listen_sockfd, (struct sockaddr *) &server_addr, &server_addr_sz);
-	if(listen(listen_sockfd,5)==0)
-		cout << "Controller listening on port " << ntohs(server_addr.sin_port) << endl;
+	if(listen(listen_sockfd,5)==0) {
+		listening_port = ntohs(server_addr.sin_port);
+		cout << "Controller listening on port " << listening_port << endl;
+	}
 	else {
 		cout << "Error in listening!" << endl;
 		exit(1);
@@ -68,9 +82,17 @@ void *start_listening(void *dummy_arg) {
 		int connection_sockfd = accept(listen_sockfd, (struct sockaddr *) &client_addr, &client_addr_sz);
 		cout << "New switch connected with controller..." << endl;
 		pthread_mutex_lock(&connection_mutex);
-		cout << "Switch ID: " << num_switches_connected << endl;
-		p2p_connection_fds[num_switches_connected++] = connection_sockfd;
+		int cur_switch_id = num_switches_connected++;
+		cout << "Switch ID: " << cur_switch_id << endl;
+		if(secure_controller == 1) {
+			all_hashes[cur_switch_id] = sha256(to_string(cur_switch_id));
+			cout << "Hash for switch " << cur_switch_id << " calculated and initialized as: " << all_hashes[cur_switch_id] << endl;
+		}
+		p2p_connection_fds[cur_switch_id] = connection_sockfd;
 		pthread_mutex_unlock(&connection_mutex);
+		char buff[MAX_SIZE];
+		sprintf(buff, "2::%d", cur_switch_id);
+		send(connection_sockfd, buff, sizeof buff, 0);
 	}
 }
 
@@ -91,9 +113,26 @@ void add_new_flow() {
 	cout << "Flow Id for the new flow: " << cur_flow_id << endl;
 	pthread_mutex_lock(&connection_mutex);
 	for(int i=1; i<path_len-1;i++) {
-		char buff[MAX_SIZE];
+		char buff[MAX_SIZE], rcv_buff[MAX_SIZE];
 		sprintf(buff, "1::%d::%d::%d", cur_flow_id, path_ports[i], path_ports[i+1]);
+		if(secure_controller == 1) {
+			string new_hash_inp = all_hashes[path[i]] + to_string(cur_flow_id) + "::" + to_string(path_ports[i]) + "::" + to_string(path_ports[i+1]);
+			cout << "Refreshing hash..." << endl;
+			all_hashes[path[i]] = sha256(new_hash_inp);
+			cout << "New hash calculated for switch " << path[i] << ":" << all_hashes[path[i]] << endl;
+		}
 		send(p2p_connection_fds[path[i]], buff, sizeof buff, 0);
+		recv(p2p_connection_fds[path[i]], rcv_buff, MAX_SIZE, 0);
+		cout << "Ack received: " << rcv_buff << endl;
+		if(secure_controller == 1) {
+			char *token = strtok(rcv_buff, "::");
+			token = strtok(NULL, "::");
+			cout << "Hash received in acknowledgement:" << token << endl;
+			if(string(token) != all_hashes[path[i]])
+				cout << "Corrupt Switch!" << endl;
+			else
+				cout << "Honest Switch!" << endl;
+		}
 	}
 	pthread_mutex_unlock(&connection_mutex);
 }
