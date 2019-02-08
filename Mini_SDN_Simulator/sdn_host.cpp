@@ -13,9 +13,26 @@
 using namespace std;
 
 int connected_switch_port = -1;
+int listen_sockfd;
+
+void *manage_incoming_connections(void *dummy_arg) {
+	while(1) {
+		struct sockaddr_in client_addr;
+		socklen_t client_addr_sz;
+		client_addr_sz = sizeof client_addr;
+		int connection_sockfd = accept(listen_sockfd, (struct sockaddr *) &client_addr, &client_addr_sz);
+		
+		char buff[MAX_SIZE], *msg;
+		recv(connection_sockfd, buff, MAX_SIZE, 0);
+		msg = strtok(buff, "::");
+		msg = strtok(NULL, "::");
+		cout << "Incoming message:" << endl;
+		cout << msg << endl;
+		close(connection_sockfd);
+	}
+}
 
 void start_listening() {
-	int listen_sockfd;
 	struct sockaddr_in server_addr;
 	char buff[1024];
 	socklen_t server_addr_sz;
@@ -36,20 +53,8 @@ void start_listening() {
 		exit(1);
 	}
 
-	if(fork() == 0) {
-		while(1) {
-			struct sockaddr_in client_addr;
-			socklen_t client_addr_sz;
-			client_addr_sz = sizeof client_addr;
-			int connection_sockfd = accept(listen_sockfd, (struct sockaddr *) &client_addr, &client_addr_sz);
-			
-			char buff[MAX_SIZE];
-			recv(connection_sockfd, buff, MAX_SIZE, 0);
-			cout << "Incoming message:" << endl;
-			cout << buff << endl;
-			close(connection_sockfd);
-		}
-	}
+	pthread_t connection_manager;
+	pthread_create(&connection_manager, NULL, &manage_incoming_connections, NULL);
 }
 
 void send_msg(char msg[], int flow_id) {
@@ -74,16 +79,17 @@ void send_msg(char msg[], int flow_id) {
 
 int main() {
 	cout << "Starting new host..." << endl;
+	cout << "Menu:" << endl;
+	cout << "1. Connect to switch" << endl;
+	cout << "2. Send new message" << endl;
+	cout << "3. Exit" << endl;
 	while(1) {
 		int ch;
-		cout << "Menu:" << endl;
-		cout << "1. Connect to switch" << endl;
-		cout << "2. Send new message" << endl;
 		cin >> ch;
 		switch(ch) {
 		case 1: {
 			if(connected_switch_port != -1) {
-				cout << "Already connected to a switch!";
+				cout << "Already connected to a switch!" << endl;
 				break;
 			}
 			cout << "Enter switch port: " << endl;
@@ -93,18 +99,25 @@ int main() {
 			break;
 		}
 		case 2: {
-			if(connected_switch_port != -1) {
+			if(connected_switch_port == -1) {
 				cout << "Please connect to a switch!" << endl;
 				break;
 			}
 			char msg[MAX_SIZE];
+			string msg_str;
 			int flow_id;
-			cout << "Enter message: ";
-			fgets(msg, MAX_SIZE, stdin);
 			cout << "Enter flow id: ";
 			cin >> flow_id;
+			cout << "Enter message: ";
+			ws(cin);
+			getline(cin, msg_str);
+			strcpy(msg, msg_str.c_str());
 			send_msg(msg, flow_id);
 			break;
+		}
+		case 3: {
+			close(listen_sockfd);
+			return 0;
 		}
 		default: {
 			cout << "Invalid choice!" << endl;

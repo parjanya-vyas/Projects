@@ -109,13 +109,13 @@ int main(int argc, char *argv[]) {
 	pthread_t listener_thread;
 	pthread_create(&listener_thread, NULL, &start_listening, NULL);
 
+	cout << "Menu" << endl;
+	cout << "1. Add new flow" << endl;
+	cout << "2. Dump controller state" << endl;
+	cout << "3. Exit" << endl;
+
 	while(1) {
 		int ch;
-		cout << "Menu" << endl;
-		cout << "1. Add new flow" << endl;
-		cout << "2. Dump controller state" << endl;
-		cout << "3. Exit" << endl;
-		cout << "Enter choice: ";
 		cin >> ch;
 		switch(ch) {
 		case 1: {

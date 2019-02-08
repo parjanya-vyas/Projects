@@ -5,4 +5,4 @@ sdn_controller: sdn_controller.cpp
 sdn_switch: sdn_switch.cpp
 	g++ -pthread sdn_switch.cpp -o sdn_switch
 sdn_host: sdn_host.cpp
-	g++ sdn_host.cpp -o sdn_host
+	g++ -pthread sdn_host.cpp -o sdn_host

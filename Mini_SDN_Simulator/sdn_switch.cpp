@@ -26,19 +26,17 @@ int switch_port_listening[MAX_SIZE];
 int num_switch_ports = 0;
 
 void dump_state() {
-	cout << "Switch type: " << (secure_switch==0?"Normal":"Secure") << endl << endl;
+	cout << "Switch type: " << (secure_switch==0?"Normal":"Secure") << endl;
 	cout << "Number of ports in switch: " << num_switch_ports << endl;
 	cout << "Each listening on:" << endl;
 	for(int i=0;i<num_switch_ports;i++)
 		cout << switch_port_listening[i] << endl;
-	cout << endl;
 	pthread_mutex_lock(&flow_table_mutex);
-	cout << "Number of flow table entries: " << num_flow_table_entries << endl << endl;
+	cout << "Number of flow table entries: " << num_flow_table_entries << endl;
 	cout << "Flow table:" << endl;
 	cout << "Flow id\tSource Port\tDestination Port" << endl;
 	for(int i=0;i<num_flow_table_entries;i++)
 		cout << flow_table[i][0] << "\t" << flow_table[i][1] << "\t" << flow_table[i][2] << "\t" << endl;
-	cout << endl;
 	pthread_mutex_unlock(&flow_table_mutex);
 	cout << "Connected to controller at port: " << controller_port << endl;
 }
@@ -60,14 +58,15 @@ void add_new_flow_table_entry(int flow_id, int src_port, int dstn_port) {
 }
 
 int get_dstn_port_from_flow_table(int flow_id, int src_port) {
+	int dstn_port = -1;
 	pthread_mutex_lock(&flow_table_mutex);
 	for(int i=0;i<num_flow_table_entries;i++) {
 		if(flow_table[i][0] == flow_id && flow_table[i][1] == src_port)
-			return flow_table[i][2];
+			dstn_port = flow_table[i][2];
 	}
 	pthread_mutex_unlock(&flow_table_mutex);
 
-	return -1;
+	return dstn_port;
 }
 
 void route_packet(char packet[], int src_port) {
@@ -129,8 +128,6 @@ void *add_new_switch_port(void *dummy_arg) {
 }
 
 void *connect_to_controller(void *dummy_arg) {
-	cout << "Enter controller port: ";
-	cin >> controller_port;
 	cout << "Trying to connect controller at 127.0.0.1:" << controller_port << "..." << endl;
 
 	struct sockaddr_in controller_addr;
@@ -162,7 +159,7 @@ void *connect_to_controller(void *dummy_arg) {
 				int src_port = strtol(token, NULL, 10);
 				token = strtok(NULL, "::");
 				int dstn_port = strtol(token, NULL, 10);
-				cout << "Flow id: " << flow_id << " Src port: " << src_port << "Dstn port: " << dstn_port << endl;
+				cout << "Flow id: " << flow_id << " Src port: " << src_port << " Dstn port: " << dstn_port << endl;
 				add_new_flow_table_entry(flow_id, src_port, dstn_port);
 				break;
 			}
@@ -184,18 +181,20 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 	secure_switch = strtol(argv[1], NULL, 10);
+	cout << "Starting switch..." << endl;
+	cout << "Press 1 to connect to controller" << endl;
+	cout << "Press 2 to add new port" << endl;
+	cout << "Press 3 to dump switch state" << endl;
+	cout << "Press 4 to exit" << endl;
 
 	while(1) {
 		int ch;
-		cout << "Press 1 to connect to controller" << endl;
-		cout << "Press 2 to add new port" << endl;
-		cout << "Press 3 to dump switch state" << endl;
-		cout << "Press 4 to exit" << endl;
-		cout << "Enter choice: ";
 		cin >> ch;
 		switch(ch) {
 		case 1: {
 			pthread_t controller_manager;
+			cout << "Enter controller port: ";
+			cin >> controller_port;
 			pthread_create(&controller_manager, NULL, &connect_to_controller, NULL);
 			break;
 		}
