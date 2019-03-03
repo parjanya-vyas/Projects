@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <pthread.h>
 #include <unistd.h>
 
@@ -34,7 +35,34 @@ int num_flows = 0;
 int all_connections[MAX_SIZE][2];
 int num_connections = 0;
 
+int parse_line(char* line){
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p <'0' || *p > '9') p++;
+    line[i-3] = '\0';
+    i = atoi(p);
+    return i;
+}
+
+int get_memory_usage_value(){ //Note: this value is in KB!
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmSize:", 7) == 0){
+            result = parse_line(line);
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+
 void dump_state() {
+	cout << "Controller type: " << (secure_controller==0?"Normal":"Secure") << endl;
+	cout << "Current memory used: " << get_memory_usage_value() << " KB" << endl;
 	pthread_mutex_lock(&connection_mutex);
 	cout << "Number of switches connected: " << num_switches_connected << endl;
 	cout << "Network Topology:" << endl;
@@ -167,6 +195,8 @@ void add_new_flow() {
 	cout << "Enter all path nodes' ids (space separated):" << endl;
 	for(int i=0;i<path_len;i++)
 		cin >> path[i];
+	struct timeval start, end;
+	gettimeofday(&start, NULL);
 	int cur_flow_id = num_flows++;
 	flows[cur_flow_id][0] = path[0];
 	flows[cur_flow_id][1] = path[path_len-1];
@@ -184,9 +214,13 @@ void add_new_flow() {
 		send(p2p_connection_fds[path[i]], buff, sizeof buff, 0);
 	}
 	pthread_mutex_unlock(&connection_mutex);
+	gettimeofday(&end, NULL);
+	unsigned long long t = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000;
+	cout << "Time taken to add new flow: " << t << "milliseconds" << endl;
 }
 
 int main(int argc, char *argv[]) {
+	init();
 	if(argc != 2) {
 		cout << "Invalid arguments!" << endl;
 		return 1;

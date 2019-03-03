@@ -6,6 +6,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #define MAX_SIZE 1024
@@ -90,6 +91,9 @@ void *manage_incoming_connections(void *dummy_arg) {
 		msg = strtok(NULL, "::");
 		cout << "Incoming message:" << endl;
 		cout << msg << endl;
+		struct timeval t;
+		gettimeofday(&t, NULL);
+		cout << "Time when msg received: " << t.tv_sec << "sec " << t.tv_usec << "usec" << endl;
 	}
 }
 
@@ -148,6 +152,9 @@ int main() {
 			ws(cin);
 			getline(cin, msg_str);
 			strcpy(msg, msg_str.c_str());
+			struct timeval t;
+			gettimeofday(&t, NULL);
+			cout << "Time when msg sent: " << t.tv_sec << "sec " << t.tv_usec << "usec" << endl;
 			send_msg(msg, flow_id);
 			break;
 		}

@@ -34,8 +34,34 @@ int num_ngb = 0;
 int listen_fd = -1;
 int listen_port = -1;
 
+int parse_line(char* line){
+    // This assumes that a digit will be found and the line ends in " Kb".
+    int i = strlen(line);
+    const char* p = line;
+    while (*p <'0' || *p > '9') p++;
+    line[i-3] = '\0';
+    i = atoi(p);
+    return i;
+}
+
+int get_memory_usage_value(){ //Note: this value is in KB!
+    FILE* file = fopen("/proc/self/status", "r");
+    int result = -1;
+    char line[128];
+
+    while (fgets(line, 128, file) != NULL){
+        if (strncmp(line, "VmSize:", 7) == 0){
+            result = parse_line(line);
+            break;
+        }
+    }
+    fclose(file);
+    return result;
+}
+
 void dump_state() {
 	cout << "Switch type: " << (secure_switch==0?"Normal":"Secure") << endl;
+	cout << "Current memory used: " << get_memory_usage_value() << " KB" << endl;
 	cout << "Number of connections in switch: " << 	num_ngb << endl;
 	cout << "All neighnours ID:" << endl;
 	for(int i=0;i<num_ngb;i++)
@@ -262,6 +288,7 @@ void *connect_to_controller(void *dummy_arg) {
 }
 
 int main(int argc, char *argv[]) {
+	init();
 	if(argc != 2) {
 		cout << "Error in arguments!" << endl;
 		return 1;
