@@ -27,20 +27,23 @@ pthread_mutex_t flow_table_mutex = PTHREAD_MUTEX_INITIALIZER;
 int flow_table[MAX_SIZE][3];
 int num_flow_table_entries = 0;
 
-int switch_port_fds[MAX_SIZE];
-int switch_port_listening[MAX_SIZE];
-int num_switch_ports = 0;
+int ngb_fds[MAX_SIZE];
+int ngb_ids[MAX_SIZE];
+int num_ngb = 0;
+
+int listen_fd = -1;
+int listen_port = -1;
 
 void dump_state() {
 	cout << "Switch type: " << (secure_switch==0?"Normal":"Secure") << endl;
-	cout << "Number of ports in switch: " << num_switch_ports << endl;
-	cout << "Each listening on:" << endl;
-	for(int i=0;i<num_switch_ports;i++)
-		cout << switch_port_listening[i] << endl;
+	cout << "Number of connections in switch: " << 	num_ngb << endl;
+	cout << "All neighnours ID:" << endl;
+	for(int i=0;i<num_ngb;i++)
+		cout << ngb_ids[i] << endl;
 	pthread_mutex_lock(&flow_table_mutex);
 	cout << "Number of flow table entries: " << num_flow_table_entries << endl;
 	cout << "Flow table:" << endl;
-	cout << "Flow id\tSource Port\tDestination Port" << endl;
+	cout << "Flow id\tSource ID\tDestination ID" << endl;
 	for(int i=0;i<num_flow_table_entries;i++)
 		cout << flow_table[i][0] << "\t" << flow_table[i][1] << "\t" << flow_table[i][2] << "\t" << endl;
 	pthread_mutex_unlock(&flow_table_mutex);
@@ -52,87 +55,140 @@ void dump_state() {
 void close_all_sockets() {
 	if(controller_port != -1)
 		close(controller_fd);
-	for(int i=0;i<num_switch_ports;i++)
-		close(switch_port_fds[i]);
 }
 
-void add_new_flow_table_entry(int flow_id, int src_port, int dstn_port) {
+void add_new_flow_table_entry(int flow_id, int src_id, int dstn_id) {
 	pthread_mutex_lock(&flow_table_mutex);
 	flow_table[num_flow_table_entries][0] = flow_id;
-	flow_table[num_flow_table_entries][1] = src_port;
-	flow_table[num_flow_table_entries][2] = dstn_port;
+	flow_table[num_flow_table_entries][1] = src_id;
+	flow_table[num_flow_table_entries][2] = dstn_id;
 	num_flow_table_entries++;
 	pthread_mutex_unlock(&flow_table_mutex);
 }
 
-int get_dstn_port_from_flow_table(int flow_id, int src_port) {
-	int dstn_port = -1;
+int get_dstn_fd(int flow_id, int src_id) {
+	int dstn_fd = -1;
 	pthread_mutex_lock(&flow_table_mutex);
 	for(int i=0;i<num_flow_table_entries;i++) {
-		if(flow_table[i][0] == flow_id && flow_table[i][1] == src_port)
-			dstn_port = flow_table[i][2];
+		if(flow_table[i][0] == flow_id && flow_table[i][1] == src_id) {
+			int dstn_id = flow_table[i][2];
+			cout << "Found the destination id " << dstn_id << " from flow table..." << endl;
+			for(int j=0;j<num_ngb;j++)
+				if(ngb_ids[j] == dstn_id)
+					dstn_fd = ngb_fds[j];
+		}
 	}
 	pthread_mutex_unlock(&flow_table_mutex);
 
-	return dstn_port;
+	return dstn_fd;
 }
 
-void route_packet(char packet[], int src_port) {
+void route_packet(char packet[], int src_id) {
 	char packet_to_send[MAX_SIZE];
 	strcpy(packet_to_send, packet);
 	char *token = strtok(packet, "::");
 	int flow_id = strtol(token, NULL, 10);
-	int dstn_port = get_dstn_port_from_flow_table(flow_id, src_port);
-	cout << "Found the destination port " << dstn_port << " from flow table..." << endl;
+	int dstn_fd = get_dstn_fd(flow_id, src_id);
 
-	int sockfd;
-	struct sockaddr_in server_addr;
-	socklen_t server_addr_sz;
-
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(dstn_port);
-	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	memset(server_addr.sin_zero, '\0', sizeof server_addr.sin_zero);
-	server_addr_sz = sizeof server_addr;
-
-	cout << "Forwarding packet to " << dstn_port << "..." << endl;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	connect(sockfd, (struct sockaddr *) &server_addr, server_addr_sz);
-	send(sockfd, packet_to_send, sizeof packet_to_send, 0);
-	close(sockfd);
+	cout << "Forwarding packet..." << endl;
+	send(dstn_fd, packet_to_send, sizeof packet_to_send, 0);
 }
 
-void *add_new_switch_port(void *dummy_arg) {
-	int listen_fd_id = num_switch_ports++;
-	struct sockaddr_in temp_addr, final_addr, peer_addr;
-	socklen_t temp_addr_sz, peer_addr_sz;
+void *manage_connections(void *thread_arg) {
+	int cur_num_ngb = *((int *)thread_arg);
+	int conn_fd = ngb_fds[cur_num_ngb];
+	int cur_ngb_id = ngb_ids[cur_num_ngb];
+
+	cout << "Connection established between " << switch_id << " and " << cur_ngb_id << "..." << endl;
+
+	char buff[MAX_SIZE];
+	while(1) {
+		memset(buff, '\0', sizeof buff);
+		recv(conn_fd, buff, MAX_SIZE, 0);
+		cout << "Received New message from " << cur_ngb_id << ":" << endl;
+		cout << buff << endl;
+		cout << "Routing Packet..." << endl;
+		route_packet(buff, cur_ngb_id);
+	}
+}
+
+void *start_listening(void *dummy_arg) {
+	struct sockaddr_in temp_addr;
+	socklen_t temp_addr_sz;
 
 	temp_addr.sin_family = AF_INET;
 	temp_addr.sin_port = htons(0);
 	temp_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
 	memset(temp_addr.sin_zero, '\0', sizeof temp_addr.sin_zero);
 	temp_addr_sz = sizeof temp_addr;
-	peer_addr_sz = sizeof peer_addr;
 
-	switch_port_fds[listen_fd_id] = socket(AF_INET, SOCK_STREAM, 0);
-	bind(switch_port_fds[listen_fd_id], (struct sockaddr *) &temp_addr, temp_addr_sz);
-	listen(switch_port_fds[listen_fd_id], 5);
+	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
+	bind(listen_fd, (struct sockaddr *) &temp_addr, temp_addr_sz);
+	listen(listen_fd, 5);
 
-	getsockname(switch_port_fds[listen_fd_id], (struct sockaddr *) &final_addr, &temp_addr_sz);
-	switch_port_listening[listen_fd_id] = ntohs(final_addr.sin_port);
-	cout << "Started new switch port on 127.0.0.1:" << switch_port_listening[listen_fd_id] << "..." << endl;
+	getsockname(listen_fd, (struct sockaddr *) &temp_addr, &temp_addr_sz);
+	listen_port = ntohs(temp_addr.sin_port);
+	cout << "Switch accepting connections on 127.0.0.1:" << listen_port << "..." << endl;
 
 	while(1) {
-		int conn_fd = accept(switch_port_fds[listen_fd_id], (struct sockaddr *) &peer_addr, &peer_addr_sz);
+		struct sockaddr_in peer_addr;
+		socklen_t peer_addr_sz;
+		peer_addr_sz = sizeof peer_addr;
+		int conn_fd = accept(listen_fd, (struct sockaddr *) &peer_addr, &peer_addr_sz);
+
 		char buff[MAX_SIZE];
+		sprintf(buff, "%d", switch_id);
+		send(conn_fd, buff, sizeof buff, 0);
 		memset(buff, '\0', sizeof buff);
 		recv(conn_fd, buff, MAX_SIZE, 0);
-		cout << "Received New message at port " << switch_port_listening[listen_fd_id] << ":" << endl;
-		cout << buff << endl;
-		cout << "Routing Packet..." << endl;
-		route_packet(buff, switch_port_listening[listen_fd_id]);
-		close(conn_fd);
+
+		ngb_fds[num_ngb] = conn_fd;
+		ngb_ids[num_ngb] = strtol(buff, NULL, 10);
+
+		sprintf(buff, "1::%d", ngb_ids[num_ngb]);
+		send(controller_fd, buff, sizeof buff, 0);
+
+		pthread_t connection_manager;
+		int *thread_arg = (int *)malloc(sizeof(int *));
+		*thread_arg = num_ngb;
+		pthread_create(&connection_manager, NULL, &manage_connections, (void *)thread_arg);
+
+		num_ngb++;
 	}
+}
+
+void add_new_connection(int dstn_port) {
+	struct sockaddr_in peer_addr, cur_addr;
+	socklen_t peer_addr_sz, cur_addr_sz;
+
+	peer_addr.sin_family = AF_INET;
+	peer_addr.sin_port = htons(dstn_port);
+	peer_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	memset(peer_addr.sin_zero, '\0', sizeof peer_addr.sin_zero);
+	peer_addr_sz = sizeof peer_addr;
+	cur_addr_sz = sizeof cur_addr;
+
+	int new_conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+	connect(new_conn_fd, (struct sockaddr *) &peer_addr, peer_addr_sz);
+
+	getsockname(new_conn_fd, (struct sockaddr *) &cur_addr, &cur_addr_sz);
+	cout << "New connection added between " << ntohs(cur_addr.sin_port) << " and " << ntohs(peer_addr.sin_port) << "..." << endl;
+
+	char buff[MAX_SIZE];
+	recv(new_conn_fd, buff, MAX_SIZE, 0);
+	int cur_ngb_id = strtol(buff, NULL, 10);
+	sprintf(buff, "%d", switch_id);
+	send(new_conn_fd, buff, sizeof buff, 0);
+
+	ngb_fds[num_ngb] = new_conn_fd;
+	ngb_ids[num_ngb] = cur_ngb_id;
+
+	pthread_t connection_manager;
+	int *thread_arg = (int *)malloc(sizeof(int *));
+	*thread_arg = num_ngb;
+	pthread_create(&connection_manager, NULL, &manage_connections, (void *)thread_arg);
+
+	num_ngb++;
 }
 
 void *connect_to_controller(void *dummy_arg) {
@@ -150,6 +206,9 @@ void *connect_to_controller(void *dummy_arg) {
 	controller_fd = socket(AF_INET, SOCK_STREAM, 0);
 	if(connect(controller_fd, (struct sockaddr *) &controller_addr, controller_addr_sz) == 0) {
 		cout << "Connected to controller successfully..." << endl;
+		char msg_to_controller[MAX_SIZE];
+		sprintf(msg_to_controller, "%d", listen_port);
+		send(controller_fd, msg_to_controller, sizeof msg_to_controller, 0);
 		while(1) {
 			char msg_from_controller[MAX_SIZE];
 			memset(msg_from_controller, '\0', sizeof msg_from_controller);
@@ -209,8 +268,10 @@ int main(int argc, char *argv[]) {
 	}
 	secure_switch = strtol(argv[1], NULL, 10);
 	cout << "Starting switch..." << endl;
+	pthread_t listener_thread;
+	pthread_create(&listener_thread, NULL, &start_listening, NULL);
 	cout << "Press 1 to connect to controller" << endl;
-	cout << "Press 2 to add new port" << endl;
+	cout << "Press 2 to add new connection" << endl;
 	cout << "Press 3 to dump switch state" << endl;
 	cout << "Press 4 to exit" << endl;
 
@@ -226,8 +287,10 @@ int main(int argc, char *argv[]) {
 			break;
 		}
 		case 2: {
-			pthread_t port_manager;
-			pthread_create(&port_manager, NULL, &add_new_switch_port, NULL);
+			cout << "Enter destination port:" << endl;
+			int dstn_port;
+			cin >> dstn_port;
+			add_new_connection(dstn_port);
 			break;
 		}
 		case 3: {

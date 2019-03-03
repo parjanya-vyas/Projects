@@ -12,56 +12,52 @@
 
 using namespace std;
 
+int host_id = -1;
+
+int controller_port = -1;
+int controller_fd = -1;
+
 int connected_switch_port = -1;
-int listen_sockfd;
+int switch_conn_fd = -1;
+int connected_switch_id = -1;
 
-void *manage_incoming_connections(void *dummy_arg) {
-	while(1) {
-		struct sockaddr_in client_addr;
-		socklen_t client_addr_sz;
-		client_addr_sz = sizeof client_addr;
-		int connection_sockfd = accept(listen_sockfd, (struct sockaddr *) &client_addr, &client_addr_sz);
-		
-		char buff[MAX_SIZE], *msg;
-		recv(connection_sockfd, buff, MAX_SIZE, 0);
-		msg = strtok(buff, "::");
-		msg = strtok(NULL, "::");
-		cout << "Incoming message:" << endl;
-		cout << msg << endl;
-		close(connection_sockfd);
+void *connect_to_controller(void *dummy_arg) {
+	cout << "Trying to connect controller at 127.0.0.1:" << controller_port << "..." << endl;
+
+	struct sockaddr_in controller_addr;
+	socklen_t controller_addr_sz;
+
+	controller_addr.sin_family = AF_INET;
+	controller_addr.sin_port = htons(controller_port);
+	controller_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
+	memset(controller_addr.sin_zero, '\0', sizeof controller_addr.sin_zero);
+	controller_addr_sz = sizeof controller_addr;
+
+	controller_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if(connect(controller_fd, (struct sockaddr *) &controller_addr, controller_addr_sz) == 0) {
+		cout << "Connected to controller successfully..." << endl;
+		char buff[MAX_SIZE];
+		sprintf(buff, "%d", 0);
+		send(controller_fd, buff, sizeof buff, 0);
+		memset(buff, '\0', sizeof buff);
+		recv(controller_fd, buff, MAX_SIZE, 0);
+		char *token = strtok(buff, "::");
+		token = strtok(NULL, "::");
+		host_id = strtol(token, NULL, 10);
+		cout << "Host id received from controller: " << host_id << "..." << endl;
+		while(1) {
+			char msg_from_controller[MAX_SIZE];
+			memset(msg_from_controller, '\0', sizeof msg_from_controller);
+			recv(controller_fd, msg_from_controller, MAX_SIZE, 0);
+			cout << "Received new message from controller:" << endl;
+			cout << msg_from_controller << endl;
+		}
 	}
+	else
+		cout << "Error connecting controller!" << endl;
 }
 
-void start_listening() {
-	struct sockaddr_in server_addr;
-	char buff[1024];
-	socklen_t server_addr_sz;
-
-	server_addr.sin_family = AF_INET;
-	server_addr.sin_port = htons(0);
-	server_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
-	memset(server_addr.sin_zero, '\0', sizeof server_addr.sin_zero);
-	server_addr_sz = sizeof server_addr;
-
-	listen_sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	bind(listen_sockfd, (struct sockaddr *) &server_addr, server_addr_sz);
-	getsockname(listen_sockfd, (struct sockaddr *) &server_addr, &server_addr_sz);
-	if(listen(listen_sockfd,5)==0)
-		cout << "Host listening on port " << ntohs(server_addr.sin_port) << endl;
-	else {
-		cout << "Error in listening!" << endl;
-		exit(1);
-	}
-
-	pthread_t connection_manager;
-	pthread_create(&connection_manager, NULL, &manage_incoming_connections, NULL);
-}
-
-void send_msg(char msg[], int flow_id) {
-	char buff[MAX_SIZE];
-	sprintf(buff, "%d::%s", flow_id, msg);
-
-	int sockfd;
+void connect_to_switch() {
 	struct sockaddr_in server_addr;
 	socklen_t server_addr_sz;
 
@@ -71,23 +67,62 @@ void send_msg(char msg[], int flow_id) {
 	memset(server_addr.sin_zero, '\0', sizeof server_addr.sin_zero);
 	server_addr_sz = sizeof server_addr;
 
-	sockfd = socket(AF_INET, SOCK_STREAM, 0);
-	connect(sockfd, (struct sockaddr *) &server_addr, server_addr_sz);
-	send(sockfd, buff, sizeof buff, 0);
-	close(sockfd);
+	switch_conn_fd = socket(AF_INET, SOCK_STREAM, 0);
+	if(connect(switch_conn_fd, (struct sockaddr *) &server_addr, server_addr_sz) == 0)
+		cout << "Sucessfully connected to the switch..." << endl;
+	else
+		perror("Switch connection error");
+	getsockname(switch_conn_fd, (struct sockaddr *) &server_addr, &server_addr_sz);
+
+	char buff[MAX_SIZE];
+	recv(switch_conn_fd, buff, MAX_SIZE, 0);
+	connected_switch_id = strtol(buff, NULL, 10);
+	memset(buff, '\0', sizeof buff);
+	sprintf(buff, "%d", host_id);
+	send(switch_conn_fd, buff, sizeof buff, 0);
+}
+
+void *manage_incoming_connections(void *dummy_arg) {
+	while(1) {
+		char buff[MAX_SIZE], *msg;
+		recv(switch_conn_fd, buff, MAX_SIZE, 0);
+		msg = strtok(buff, "::");
+		msg = strtok(NULL, "::");
+		cout << "Incoming message:" << endl;
+		cout << msg << endl;
+	}
+}
+
+void start_listening() {
+	pthread_t connection_manager;
+	pthread_create(&connection_manager, NULL, &manage_incoming_connections, NULL);
+}
+
+void send_msg(char msg[], int flow_id) {
+	char buff[MAX_SIZE];
+	sprintf(buff, "%d::%s", flow_id, msg);
+	send(switch_conn_fd, buff, sizeof buff, 0);
 }
 
 int main() {
 	cout << "Starting new host..." << endl;
 	cout << "Menu:" << endl;
-	cout << "1. Connect to switch" << endl;
-	cout << "2. Send new message" << endl;
-	cout << "3. Exit" << endl;
+	cout << "1. Connect to controller" << endl;
+	cout << "2. Connect to switch" << endl;
+	cout << "3. Send new message" << endl;
+	cout << "4. Exit" << endl;
 	while(1) {
 		int ch;
 		cin >> ch;
 		switch(ch) {
 		case 1: {
+			pthread_t controller_manager;
+			cout << "Enter controller port: ";
+			cin >> controller_port;
+			pthread_create(&controller_manager, NULL, &connect_to_controller, NULL);
+			break;
+		}
+		case 2: {
 			if(connected_switch_port != -1) {
 				cout << "Already connected to a switch!" << endl;
 				break;
@@ -95,10 +130,11 @@ int main() {
 			cout << "Enter switch port: " << endl;
 			cin >> connected_switch_port;
 			cout << "Establishing connection..." << endl;
+			connect_to_switch();
 			start_listening();
 			break;
 		}
-		case 2: {
+		case 3: {
 			if(connected_switch_port == -1) {
 				cout << "Please connect to a switch!" << endl;
 				break;
@@ -115,8 +151,8 @@ int main() {
 			send_msg(msg, flow_id);
 			break;
 		}
-		case 3: {
-			close(listen_sockfd);
+		case 4: {
+			close(switch_conn_fd);
 			return 0;
 		}
 		default: {
