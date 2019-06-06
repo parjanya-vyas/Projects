@@ -10,10 +10,16 @@
 #include <sys/time.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
-#include "sha256.h"
+#include "../sha256/sha256.h"
 
 #define MAX_SIZE 1024
+
+#define CONTROLLER_PIPE_REQ "../temp/controller_pipe_req"
+#define CONTROLLER_PIPE_RES "../temp/controller_pipe_res"
+#define CONTROLLER_LOG "../logs/controller_logs.txt"
 
 using namespace std;
 
@@ -34,6 +40,34 @@ int num_flows = 0;
 //src_switch_id x dstn_switch_id
 int all_connections[MAX_SIZE][2];
 int num_connections = 0;
+
+int read_request(char *inp) {
+	int pipefd = open(CONTROLLER_PIPE_REQ, O_RDONLY);
+	int count = read(pipefd, inp, MAX_SIZE);
+	close(pipefd);
+
+	return count;
+}
+
+int write_response(char *res) {
+	int pipefd = open(CONTROLLER_PIPE_RES, O_WRONLY);
+	int count = write(pipefd, res, strlen(res)+1);
+	close(pipefd);
+
+	return count;
+}
+
+int get_args_from_input(char **args, char *req) {
+    memset(args, '\0', sizeof(char*) * MAX_SIZE);
+    char *curToken = strtok(req, " ");
+    int i;
+    for (i = 0; curToken != NULL; i++) {
+      args[i] = strdup(curToken);
+      curToken = strtok(NULL, " ");
+    }
+
+    return i;
+}
 
 int parse_line(char* line){
     // This assumes that a digit will be found and the line ends in " Kb".
@@ -96,12 +130,13 @@ void *manage_switch_connections(void *thread_arg) {
 	char buff[MAX_SIZE];
 	while(1) {
 		memset(buff, '\0', sizeof buff);
-		recv(conn_fd, buff, MAX_SIZE, 0);
+		int rcvd_data = recv(conn_fd, buff, MAX_SIZE, 0);
 		int cmd = strtol(strtok(buff, "::"), NULL, 10);
 
 		switch(cmd) {
 		case 0: {
 			cout << "Ack received..." << endl;
+			cout << "Network data received: " << rcvd_data << " Bytes" << endl;
 			if(secure_controller == 1) {
 				char *token = strtok(NULL, "::");
 				cout << "Hash received in acknowledgement:" << token << endl;
@@ -145,8 +180,11 @@ void *start_listening(void *dummy_arg) {
 	listen_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(listen_sockfd, (struct sockaddr *) &server_addr, server_addr_sz);
 	getsockname(listen_sockfd, (struct sockaddr *) &server_addr, &server_addr_sz);
-	if(listen(listen_sockfd,5)==0) {
+	if(listen(listen_sockfd, 128)==0) {
+		char res[MAX_SIZE];
 		listening_port = ntohs(server_addr.sin_port);
+		sprintf(res, "%d", listening_port);
+		write_response(res);
 		cout << "Controller listening on port " << listening_port << endl;
 	}
 	else {
@@ -187,14 +225,8 @@ void *start_listening(void *dummy_arg) {
 	}
 }
 
-void add_new_flow() {
-	int path_len;
-	int path[MAX_SIZE];
-	cout << "Enter path length: ";
-	cin >> path_len;
-	cout << "Enter all path nodes' ids (space separated):" << endl;
-	for(int i=0;i<path_len;i++)
-		cin >> path[i];
+void add_new_flow(int path_len, int path[]) {
+	int total_nw_data = 0;
 	struct timeval start, end;
 	gettimeofday(&start, NULL);
 	int cur_flow_id = num_flows++;
@@ -211,16 +243,22 @@ void add_new_flow() {
 			all_hashes[path[i]] = sha256(new_hash_inp);
 			cout << "New hash calculated for switch " << path[i] << ":" << all_hashes[path[i]] << endl;
 		}
-		send(p2p_connection_fds[path[i]], buff, sizeof buff, 0);
+		total_nw_data += send(p2p_connection_fds[path[i]], buff, sizeof buff, 0);
 	}
 	pthread_mutex_unlock(&connection_mutex);
 	gettimeofday(&end, NULL);
-	unsigned long long t = 1000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec)/1000;
-	cout << "Time taken to add new flow: " << t << "milliseconds" << endl;
+	unsigned long long t = 1000000 * (end.tv_sec - start.tv_sec) + (end.tv_usec - start.tv_usec);
+    char time_and_data[MAX_SIZE];
+    sprintf(time_and_data, "%llu %d", t, total_nw_data);
+    write_response(time_and_data);
+	cout << "Time taken to add new flow: " << t << "microsec" << endl;
+	cout << "Total bytes sent: " << total_nw_data << endl;
 }
 
 int main(int argc, char *argv[]) {
-	init();
+	mkfifo(CONTROLLER_PIPE_REQ, 0666);
+	mkfifo(CONTROLLER_PIPE_RES, 0666);
+	freopen(CONTROLLER_LOG, "w", stdout);
 	if(argc != 2) {
 		cout << "Invalid arguments!" << endl;
 		return 1;
@@ -237,11 +275,18 @@ int main(int argc, char *argv[]) {
 	cout << "3. Exit" << endl;
 
 	while(1) {
-		int ch;
-		cin >> ch;
+		char args[MAX_SIZE];
+		read_request(args);
+		char **args_arr = (char**)malloc(MAX_SIZE * sizeof(char*));
+        int num_args = get_args_from_input(args_arr, args);
+		int ch = strtol(args_arr[0], NULL, 10);
 		switch(ch) {
 		case 1: {
-			add_new_flow();
+			int path_len = strtol(args_arr[1], NULL, 10);
+			int *path = (int *)malloc(path_len * sizeof(int));
+			for(int i=0;i<path_len;i++)
+				path[i] = strtol(args_arr[2+i], NULL, 10);
+			add_new_flow(path_len, path);
 			break;
 		}
 		case 2: {

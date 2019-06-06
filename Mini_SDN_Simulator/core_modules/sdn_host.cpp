@@ -7,9 +7,15 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #define MAX_SIZE 1024
+
+#define PIPE_PREFIX "../temp/"
+#define LOG_PREFIX "../logs/"
 
 using namespace std;
 
@@ -21,6 +27,50 @@ int controller_fd = -1;
 int connected_switch_port = -1;
 int switch_conn_fd = -1;
 int connected_switch_id = -1;
+
+char pipename_req[MAX_SIZE], pipename_res[MAX_SIZE], pipename_msg[MAX_SIZE];
+
+int read_request(char *inp) {
+	int pipefd = open(pipename_req, O_RDONLY);
+	int count = read(pipefd, inp, MAX_SIZE);
+	close(pipefd);
+
+	return count;
+}
+
+int write_response(char *res) {
+	int pipefd = open(pipename_res, O_WRONLY);
+	int count = write(pipefd, res, strlen(res)+1);
+	close(pipefd);
+
+	return count;
+}
+
+int write_msg(char *res) {
+	int pipefd = open(pipename_msg, O_WRONLY);
+	int count = write(pipefd, res, strlen(res)+1);
+	close(pipefd);
+
+	return count;
+}
+
+int get_args_from_input(char **args, char *req) {
+    memset(args, '\0', sizeof(char*) * MAX_SIZE);
+    char *curToken = strtok(req, " ");
+    int i;
+    for (i = 0; curToken != NULL; i++) {
+      args[i] = strdup(curToken);
+      curToken = strtok(NULL, " ");
+    }
+
+    return i;
+}
+
+void get_random_msg(char *msg) {
+	for(int i=0;i<MAX_SIZE-1;i++)
+		msg[i] = ('0' + rand()%10);
+	msg[MAX_SIZE-1] = '\0';
+}
 
 void *connect_to_controller(void *dummy_arg) {
 	cout << "Trying to connect controller at 127.0.0.1:" << controller_port << "..." << endl;
@@ -85,15 +135,18 @@ void connect_to_switch() {
 
 void *manage_incoming_connections(void *dummy_arg) {
 	while(1) {
-		char buff[MAX_SIZE], *msg;
-		recv(switch_conn_fd, buff, MAX_SIZE, 0);
+		char buff[MAX_SIZE], *msg, pipe_buff[MAX_SIZE];
+		int sz = recv(switch_conn_fd, buff, MAX_SIZE, 0);
+		struct timeval t;
+		gettimeofday(&t, NULL);
 		msg = strtok(buff, "::");
 		msg = strtok(NULL, "::");
 		cout << "Incoming message:" << endl;
 		cout << msg << endl;
-		struct timeval t;
-		gettimeofday(&t, NULL);
-		cout << "Time when msg received: " << t.tv_sec << "sec " << t.tv_usec << "usec" << endl;
+		cout << "Time when msg received: " << t.tv_sec << " sec " << t.tv_usec << " usec" << endl;
+		cout << "Message size: " << sz << " Bytes" << endl;
+		sprintf(pipe_buff, "%ld %ld %s", t.tv_sec, t.tv_usec, msg);
+		write_msg(pipe_buff);
 	}
 }
 
@@ -109,20 +162,33 @@ void send_msg(char msg[], int flow_id) {
 }
 
 int main() {
+	sprintf(pipename_req, "%shost_pipe_%d_req", PIPE_PREFIX, getpid());
+	sprintf(pipename_res, "%shost_pipe_%d_res", PIPE_PREFIX, getpid());
+	sprintf(pipename_msg, "%shost_pipe_%d_msg", PIPE_PREFIX, getpid());
+	mkfifo(pipename_req, 0666);
+	mkfifo(pipename_res, 0666);
+	mkfifo(pipename_msg, 0666);
+	char logfile[MAX_SIZE];
+	sprintf(logfile, "%shost_log%d.txt", LOG_PREFIX, getpid());
+	freopen(logfile, "w", stdout);
+
 	cout << "Starting new host..." << endl;
 	cout << "Menu:" << endl;
 	cout << "1. Connect to controller" << endl;
 	cout << "2. Connect to switch" << endl;
 	cout << "3. Send new message" << endl;
 	cout << "4. Exit" << endl;
+	srand(time(NULL));
 	while(1) {
-		int ch;
-		cin >> ch;
+		char args[MAX_SIZE];
+		read_request(args);
+		char **args_arr = (char**)malloc(MAX_SIZE * sizeof(char*));
+        int num_args = get_args_from_input(args_arr, args);
+		int ch = strtol(args_arr[0], NULL, 10);
 		switch(ch) {
 		case 1: {
 			pthread_t controller_manager;
-			cout << "Enter controller port: ";
-			cin >> controller_port;
+			controller_port = strtol(args_arr[1], NULL, 10);
 			pthread_create(&controller_manager, NULL, &connect_to_controller, NULL);
 			break;
 		}
@@ -131,8 +197,7 @@ int main() {
 				cout << "Already connected to a switch!" << endl;
 				break;
 			}
-			cout << "Enter switch port: " << endl;
-			cin >> connected_switch_port;
+			connected_switch_port = strtol(args_arr[1], NULL, 10);
 			cout << "Establishing connection..." << endl;
 			connect_to_switch();
 			start_listening();
@@ -144,18 +209,21 @@ int main() {
 				break;
 			}
 			char msg[MAX_SIZE];
-			string msg_str;
-			int flow_id;
-			cout << "Enter flow id: ";
-			cin >> flow_id;
-			cout << "Enter message: ";
-			ws(cin);
-			getline(cin, msg_str);
-			strcpy(msg, msg_str.c_str());
+			get_random_msg(msg);
+			//string msg_str;
+			int flow_id = strtol(args_arr[1], NULL, 10);
+			//cout << "Enter message: ";
+			//ws(cin);
+			//getline(cin, msg_str);
+			//strcpy(msg, msg_str.c_str());
 			struct timeval t;
 			gettimeofday(&t, NULL);
-			cout << "Time when msg sent: " << t.tv_sec << "sec " << t.tv_usec << "usec" << endl;
 			send_msg(msg, flow_id);
+            cout << "Time when msg sent: " << t.tv_sec << "sec " << t.tv_usec << "usec" << endl;
+            char time_sent[MAX_SIZE];
+            sprintf(time_sent, "%ld %ld", t.tv_sec, t.tv_usec);
+            write_response(time_sent);
+            
 			break;
 		}
 		case 4: {

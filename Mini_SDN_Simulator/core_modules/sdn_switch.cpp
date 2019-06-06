@@ -9,8 +9,13 @@
 #include <sys/socket.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
-#include "sha256.h"
+#include "../sha256/sha256.h"
+
+#define PIPE_PREFIX "../temp/"
+#define LOG_PREFIX "../logs/"
 
 #define MAX_SIZE 1024
 
@@ -33,6 +38,36 @@ int num_ngb = 0;
 
 int listen_fd = -1;
 int listen_port = -1;
+
+char pipename_req[MAX_SIZE], pipename_res[MAX_SIZE];
+
+int read_request(char *inp) {
+	int pipefd = open(pipename_req, O_RDONLY);
+	int count = read(pipefd, inp, MAX_SIZE);
+	close(pipefd);
+
+	return count;
+}
+
+int write_response(char *res) {
+	int pipefd = open(pipename_res, O_WRONLY);
+	int count = write(pipefd, res, strlen(res)+1);
+	close(pipefd);
+
+	return count;
+}
+
+int get_args_from_input(char **args, char *req) {
+    memset(args, '\0', sizeof(char*) * MAX_SIZE);
+    char *curToken = strtok(req, " ");
+    int i;
+    for (i = 0; curToken != NULL; i++) {
+      args[i] = strdup(curToken);
+      curToken = strtok(NULL, " ");
+    }
+
+    return i;
+}
 
 int parse_line(char* line){
     // This assumes that a digit will be found and the line ends in " Kb".
@@ -150,10 +185,13 @@ void *start_listening(void *dummy_arg) {
 
 	listen_fd = socket(AF_INET, SOCK_STREAM, 0);
 	bind(listen_fd, (struct sockaddr *) &temp_addr, temp_addr_sz);
-	listen(listen_fd, 5);
+	listen(listen_fd, 128);
 
 	getsockname(listen_fd, (struct sockaddr *) &temp_addr, &temp_addr_sz);
 	listen_port = ntohs(temp_addr.sin_port);
+	char res[MAX_SIZE];
+	sprintf(res, "%d", listen_port);
+	write_response(res);
 	cout << "Switch accepting connections on 127.0.0.1:" << listen_port << "..." << endl;
 
 	while(1) {
@@ -288,7 +326,13 @@ void *connect_to_controller(void *dummy_arg) {
 }
 
 int main(int argc, char *argv[]) {
-	init();
+	sprintf(pipename_req, "%sswitch_pipe_%d_req", PIPE_PREFIX, getpid());
+	sprintf(pipename_res, "%sswitch_pipe_%d_res", PIPE_PREFIX, getpid());
+	mkfifo(pipename_req, 0666);
+	mkfifo(pipename_res, 0666);
+	char logfile[MAX_SIZE];
+	sprintf(logfile, "%sswitch_log%d.txt", LOG_PREFIX, getpid());
+	freopen(logfile, "w", stdout);
 	if(argc != 2) {
 		cout << "Error in arguments!" << endl;
 		return 1;
@@ -303,20 +347,20 @@ int main(int argc, char *argv[]) {
 	cout << "Press 4 to exit" << endl;
 
 	while(1) {
-		int ch;
-		cin >> ch;
+		char args[MAX_SIZE];
+		read_request(args);
+		char **args_arr = (char**)malloc(MAX_SIZE * sizeof(char*));
+        int num_args = get_args_from_input(args_arr, args);
+		int ch = strtol(args_arr[0], NULL, 10);
 		switch(ch) {
 		case 1: {
 			pthread_t controller_manager;
-			cout << "Enter controller port: ";
-			cin >> controller_port;
+			controller_port = strtol(args_arr[1], NULL, 10);
 			pthread_create(&controller_manager, NULL, &connect_to_controller, NULL);
 			break;
 		}
 		case 2: {
-			cout << "Enter destination port:" << endl;
-			int dstn_port;
-			cin >> dstn_port;
+			int dstn_port = strtol(args_arr[1], NULL, 10);
 			add_new_connection(dstn_port);
 			break;
 		}
