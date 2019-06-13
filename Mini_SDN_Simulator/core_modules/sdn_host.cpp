@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #define MAX_SIZE 1024
+#define RANDOM_MSG_SIZE 512
 
 #define PIPE_PREFIX "../temp/"
 #define LOG_PREFIX "../logs/"
@@ -29,6 +30,18 @@ int switch_conn_fd = -1;
 int connected_switch_id = -1;
 
 char pipename_req[MAX_SIZE], pipename_res[MAX_SIZE], pipename_msg[MAX_SIZE];
+
+int receive_msg(int sockfd, char *buf, size_t len, int flags) {
+	char msg[MAX_SIZE];
+	int i, ret = recv(sockfd, msg, len, flags);
+	cout << "Received raw msg:" << msg << endl;
+	if(msg[0]!='#')
+		return 0;
+	for(i=1;i<ret && msg[i]!='#';i++)
+		buf[i-1] = msg[i];
+	buf[i-1] = '\0';
+	return (ret-2);
+}
 
 int read_request(char *inp) {
 	int pipefd = open(pipename_req, O_RDONLY);
@@ -67,9 +80,9 @@ int get_args_from_input(char **args, char *req) {
 }
 
 void get_random_msg(char *msg) {
-	for(int i=0;i<MAX_SIZE-1;i++)
+	for(int i=0;i<RANDOM_MSG_SIZE;i++)
 		msg[i] = ('0' + rand()%10);
-	msg[MAX_SIZE-1] = '\0';
+	msg[RANDOM_MSG_SIZE] = '\0';
 }
 
 void *connect_to_controller(void *dummy_arg) {
@@ -88,10 +101,10 @@ void *connect_to_controller(void *dummy_arg) {
 	if(connect(controller_fd, (struct sockaddr *) &controller_addr, controller_addr_sz) == 0) {
 		cout << "Connected to controller successfully..." << endl;
 		char buff[MAX_SIZE];
-		sprintf(buff, "%d", 0);
+		sprintf(buff, "#%d#", 0);
 		send(controller_fd, buff, sizeof buff, 0);
 		memset(buff, '\0', sizeof buff);
-		recv(controller_fd, buff, MAX_SIZE, 0);
+		receive_msg(controller_fd, buff, MAX_SIZE, 0);
 		char *token = strtok(buff, "::");
 		token = strtok(NULL, "::");
 		host_id = strtol(token, NULL, 10);
@@ -99,7 +112,7 @@ void *connect_to_controller(void *dummy_arg) {
 		while(1) {
 			char msg_from_controller[MAX_SIZE];
 			memset(msg_from_controller, '\0', sizeof msg_from_controller);
-			recv(controller_fd, msg_from_controller, MAX_SIZE, 0);
+			receive_msg(controller_fd, msg_from_controller, MAX_SIZE, 0);
 			cout << "Received new message from controller:" << endl;
 			cout << msg_from_controller << endl;
 		}
@@ -126,17 +139,17 @@ void connect_to_switch() {
 	getsockname(switch_conn_fd, (struct sockaddr *) &server_addr, &server_addr_sz);
 
 	char buff[MAX_SIZE];
-	recv(switch_conn_fd, buff, MAX_SIZE, 0);
+	receive_msg(switch_conn_fd, buff, MAX_SIZE, 0);
 	connected_switch_id = strtol(buff, NULL, 10);
 	memset(buff, '\0', sizeof buff);
-	sprintf(buff, "%d", host_id);
+	sprintf(buff, "#%d#", host_id);
 	send(switch_conn_fd, buff, sizeof buff, 0);
 }
 
 void *manage_incoming_connections(void *dummy_arg) {
 	while(1) {
 		char buff[MAX_SIZE], *msg, pipe_buff[MAX_SIZE];
-		int sz = recv(switch_conn_fd, buff, MAX_SIZE, 0);
+		int sz = receive_msg(switch_conn_fd, buff, MAX_SIZE, 0);
 		struct timeval t;
 		gettimeofday(&t, NULL);
 		msg = strtok(buff, "::");
@@ -157,7 +170,7 @@ void start_listening() {
 
 void send_msg(char msg[], int flow_id) {
 	char buff[MAX_SIZE];
-	sprintf(buff, "%d::%s", flow_id, msg);
+	sprintf(buff, "#%d::%s#", flow_id, msg);
 	send(switch_conn_fd, buff, sizeof buff, 0);
 }
 

@@ -4,7 +4,7 @@
 #include "../interfaces/switch_interface.h"
 #include "../interfaces/host_interface.h"
 
-#define SLEEP_TIME 20000
+#define SLEEP_TIME 50000
 
 using namespace std;
 
@@ -60,7 +60,7 @@ void message_handler(int pid, char *msg, unsigned long long recv_time_sec, unsig
 
 	all_msg_times[flow_id] = 1000000 * (recv_time_sec - sent_time[flow_id].sec)
 			+ (recv_time_usec - sent_time[flow_id].usec);
-	cout << "Message propagation time for flow if " << flow_id << ": " << all_msg_times[host_index] << "usec" << endl;
+	cout << "Message propagation time for flow " << flow_id << ": " << all_msg_times[host_index] << "usec" << endl;
 }
 
 int main(int argc, char *argv[]) {
@@ -118,8 +118,7 @@ int main(int argc, char *argv[]) {
 	int path[MAX_SIZE] = {hosts1[0].id, switches[0].id, hosts2[0].id};
 
 	add_new_flow(3, path, &flow_time_usec, &data_sent);
-	cout << "Added flow " << 0 << " of length 3 in " << flow_time_usec << " us" << endl;
-	usleep(SLEEP_TIME);
+	cout << "Added flow for host 1 of switch 0 of length 3 in " << flow_time_usec << " us" << endl;
 
 	for(int i=1;i<num_hosts;i++) {
 		unsigned long long cur_usec;
@@ -127,17 +126,18 @@ int main(int argc, char *argv[]) {
 
 		path[i+1] = switches[i].id;
 		path[i+2] = hosts1[i].id;
+		usleep(SLEEP_TIME);
 		add_new_flow(i+3, path, &cur_usec, &cur_data);
 		cout << "Added flow for host 1 of switch " << i << " of length " << i+3 << " in " << cur_usec << " us" << endl;
-		usleep(SLEEP_TIME);
+
 		flow_time_usec += cur_usec;
 		data_sent += cur_data;
 		packets_sent += (i+1);
 
 		path[i+2] = hosts2[i].id;
+		usleep(SLEEP_TIME);
 		add_new_flow(i+3, path, &cur_usec, &cur_data);
 		cout << "Added flow for host 2 of switch " << i << " of length " << i+3 << " in " << cur_usec << " us" << endl;
-		usleep(SLEEP_TIME);
 		flow_time_usec += cur_usec;
 		data_sent += cur_data;
 		packets_sent += (i+1);
@@ -168,16 +168,17 @@ int main(int argc, char *argv[]) {
 		total_msg_time += all_msg_times[i];
 
 	cout << endl << "Network statistics:" << endl;
+	cout << "Total number of flows: " << 2*num_hosts - 1 << endl;
 	cout << "Total time to add " << (2*num_hosts-1) << " flows: " << flow_time_usec << " us" << endl;
 	cout << "Total network data sent to add all flows: " << data_sent << " bytes" << endl;
-	cout << "Total number of network packets sent to add all flows: " << packets_sent << endl << endl;
-	cout << "Total message propagation time: " << total_msg_time << " us" << endl;
+	cout << "Total number of network packets sent to add all flows: " << packets_sent << endl;
+	cout << "Total message propagation time: " << total_msg_time << " us" << endl << endl;
 
 	cout << "Average time to add a single flow: " << (double)flow_time_usec/(double)(2*num_hosts-1) << "us" << endl;
 	cout << "Average network data sent to add a single flow: " << data_sent/(double)(2*num_hosts-1) << " bytes" << endl;
 	cout << "Average number of network packets sent to add a single flow: " << packets_sent/(double)(2*num_hosts-1) << endl;
-	cout << "Average flow length: " << packets_sent + 4*num_hosts - 2 << endl;
 	cout << "Average time for message propagation: " << total_msg_time / (double)(2*num_hosts-1) << " us" << endl;
+	cout << "Average flow length: " << (num_hosts*num_hosts + 5*num_hosts - 3)/(2*num_hosts - 1) << endl;
 
 	return 0;
 }

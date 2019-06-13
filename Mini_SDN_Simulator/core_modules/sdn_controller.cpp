@@ -41,6 +41,18 @@ int num_flows = 0;
 int all_connections[MAX_SIZE][2];
 int num_connections = 0;
 
+int receive_msg(int sockfd, char *buf, size_t len, int flags) {
+	char msg[MAX_SIZE];
+	int i, ret = recv(sockfd, msg, len, flags);
+	cout << "Received raw msg:" << msg << endl;
+	if(msg[0]!='#')
+		return 0;
+	for(i=1;i<ret && msg[i]!='#';i++)
+		buf[i-1] = msg[i];
+	buf[i-1] = '\0';
+	return (ret-2);
+}
+
 int read_request(char *inp) {
 	int pipefd = open(CONTROLLER_PIPE_REQ, O_RDONLY);
 	int count = read(pipefd, inp, MAX_SIZE);
@@ -130,7 +142,10 @@ void *manage_switch_connections(void *thread_arg) {
 	char buff[MAX_SIZE];
 	while(1) {
 		memset(buff, '\0', sizeof buff);
-		int rcvd_data = recv(conn_fd, buff, MAX_SIZE, 0);
+		int rcvd_data = receive_msg(conn_fd, buff, MAX_SIZE, 0);
+		if(rcvd_data == 0)
+			continue;
+		cout << "Message received from switch " << switch_id << " : " << buff << endl;
 		int cmd = strtol(strtok(buff, "::"), NULL, 10);
 
 		switch(cmd) {
@@ -139,11 +154,17 @@ void *manage_switch_connections(void *thread_arg) {
 			cout << "Network data received: " << rcvd_data << " Bytes" << endl;
 			if(secure_controller == 1) {
 				char *token = strtok(NULL, "::");
-				cout << "Hash received in acknowledgement:" << token << endl;
+				cout << "Hash received in acknowledgment:" << token << endl;
+				if(token == NULL) {
+					cout << "NULL hash received!!!" << endl;
+					break;
+				}
+				pthread_mutex_lock(&connection_mutex);
 				if(string(token) != all_hashes[switch_id])
 					cout << "Corrupt Switch!" << endl;
 				else
 					cout << "Honest Switch!" << endl;
+				pthread_mutex_unlock(&connection_mutex);
 			}
 			break;
 		}
@@ -200,7 +221,7 @@ void *start_listening(void *dummy_arg) {
 		cout << "New switch connected with controller..." << endl;
 
 		char msg_from_switch[MAX_SIZE];
-		recv(connection_sockfd, msg_from_switch, MAX_SIZE, 0);
+		receive_msg(connection_sockfd, msg_from_switch, MAX_SIZE, 0);
 		int cur_switch_listen_port = strtol(msg_from_switch, NULL, 10);
 
 		pthread_mutex_lock(&connection_mutex);
@@ -215,8 +236,8 @@ void *start_listening(void *dummy_arg) {
 		pthread_mutex_unlock(&connection_mutex);
 
 		char buff[MAX_SIZE];
-		sprintf(buff, "2::%d", cur_switch_id);
-		send(connection_sockfd, buff, sizeof buff, 0);
+		sprintf(buff, "#2::%d#", cur_switch_id);
+		send(connection_sockfd, buff, strlen(buff)+1, 0);
 
 		pthread_t connection_manager;
 		int *thread_arg = (int *)malloc(sizeof(int *));
@@ -236,14 +257,14 @@ void add_new_flow(int path_len, int path[]) {
 	pthread_mutex_lock(&connection_mutex);
 	for(int i=1; i<path_len-1;i++) {
 		char buff[MAX_SIZE], rcv_buff[MAX_SIZE];
-		sprintf(buff, "1::%d::%d::%d", cur_flow_id, path[i-1], path[i+1]);
+		sprintf(buff, "#1::%d::%d::%d#", cur_flow_id, path[i-1], path[i+1]);
 		if(secure_controller == 1) {
 			string new_hash_inp = all_hashes[path[i]] + to_string(cur_flow_id) + "::" + to_string(path[i-1]) + "::" + to_string(path[i+1]);
 			cout << "Refreshing hash..." << endl;
 			all_hashes[path[i]] = sha256(new_hash_inp);
 			cout << "New hash calculated for switch " << path[i] << ":" << all_hashes[path[i]] << endl;
 		}
-		total_nw_data += send(p2p_connection_fds[path[i]], buff, sizeof buff, 0);
+		total_nw_data += send(p2p_connection_fds[path[i]], buff, strlen(buff)+1, 0);
 	}
 	pthread_mutex_unlock(&connection_mutex);
 	gettimeofday(&end, NULL);
@@ -251,7 +272,7 @@ void add_new_flow(int path_len, int path[]) {
     char time_and_data[MAX_SIZE];
     sprintf(time_and_data, "%llu %d", t, total_nw_data);
     write_response(time_and_data);
-	cout << "Time taken to add new flow: " << t << "microsec" << endl;
+	cout << "Time taken to add new flow: " << t << "us" << endl;
 	cout << "Total bytes sent: " << total_nw_data << endl;
 }
 

@@ -101,6 +101,7 @@ int main(int argc, char *argv[]) {
 		total_msg_time += all_msg_times[i];
 
 	cout << endl << "Network statistics:" << endl;
+	cout << "Total number of flows: " << num_hosts-1 << endl;
 	cout << "Total time to add " << num_hosts-1 << " flows of length 3: " << flow_time_usec << " us" << endl;
 	cout << "Total network data sent to add all flows: " << data_sent << " bytes" << endl;
 	cout << "Total number of network packets sent to add all flows: " << num_hosts-1 << endl;
@@ -110,6 +111,7 @@ int main(int argc, char *argv[]) {
 	cout << "Average network data sent to add a single flow of length 3: " << data_sent/(num_hosts-1) << " bytes" << endl;
 	cout << "Average number of network packets sent to add a single flow of length 3: 1" << endl;
 	cout << "Average time for message propagation: " << total_msg_time / (double)(num_hosts-1) << " us" << endl;
+	cout << "Average flow length: 3" << endl;
 
 	return 0;
 }

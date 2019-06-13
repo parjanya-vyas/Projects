@@ -29,6 +29,7 @@ int controller_port = -1;
 int controller_fd;
 
 pthread_mutex_t flow_table_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t recent_hash_mutex = PTHREAD_MUTEX_INITIALIZER;
 int flow_table[MAX_SIZE][3];
 int num_flow_table_entries = 0;
 
@@ -40,6 +41,18 @@ int listen_fd = -1;
 int listen_port = -1;
 
 char pipename_req[MAX_SIZE], pipename_res[MAX_SIZE];
+
+int receive_msg(int sockfd, char *buf, size_t len, int flags) {
+	char msg[MAX_SIZE];
+	int i, ret = recv(sockfd, msg, len, flags);
+	cout << "Received raw msg:" << msg << endl;
+	if(msg[0]!='#')
+		return 0;
+	for(i=1;i<ret && msg[i]!='#';i++)
+		buf[i-1] = msg[i];
+	buf[i-1] = '\0';
+	return (ret-2);
+}
 
 int read_request(char *inp) {
 	int pipefd = open(pipename_req, O_RDONLY);
@@ -146,13 +159,13 @@ int get_dstn_fd(int flow_id, int src_id) {
 
 void route_packet(char packet[], int src_id) {
 	char packet_to_send[MAX_SIZE];
-	strcpy(packet_to_send, packet);
+	sprintf(packet_to_send, "#%s#", packet);
 	char *token = strtok(packet, "::");
 	int flow_id = strtol(token, NULL, 10);
 	int dstn_fd = get_dstn_fd(flow_id, src_id);
 
 	cout << "Forwarding packet..." << endl;
-	send(dstn_fd, packet_to_send, sizeof packet_to_send, 0);
+	send(dstn_fd, packet_to_send, strlen(packet_to_send)+1, 0);
 }
 
 void *manage_connections(void *thread_arg) {
@@ -165,7 +178,9 @@ void *manage_connections(void *thread_arg) {
 	char buff[MAX_SIZE];
 	while(1) {
 		memset(buff, '\0', sizeof buff);
-		recv(conn_fd, buff, MAX_SIZE, 0);
+		int sz = receive_msg(conn_fd, buff, MAX_SIZE, 0);
+		if(sz == 0)
+			continue;
 		cout << "Received New message from " << cur_ngb_id << ":" << endl;
 		cout << buff << endl;
 		cout << "Routing Packet..." << endl;
@@ -201,15 +216,15 @@ void *start_listening(void *dummy_arg) {
 		int conn_fd = accept(listen_fd, (struct sockaddr *) &peer_addr, &peer_addr_sz);
 
 		char buff[MAX_SIZE];
-		sprintf(buff, "%d", switch_id);
+		sprintf(buff, "#%d#", switch_id);
 		send(conn_fd, buff, sizeof buff, 0);
 		memset(buff, '\0', sizeof buff);
-		recv(conn_fd, buff, MAX_SIZE, 0);
+		receive_msg(conn_fd, buff, MAX_SIZE, 0);
 
 		ngb_fds[num_ngb] = conn_fd;
 		ngb_ids[num_ngb] = strtol(buff, NULL, 10);
 
-		sprintf(buff, "1::%d", ngb_ids[num_ngb]);
+		sprintf(buff, "#1::%d#", ngb_ids[num_ngb]);
 		send(controller_fd, buff, sizeof buff, 0);
 
 		pthread_t connection_manager;
@@ -239,10 +254,10 @@ void add_new_connection(int dstn_port) {
 	cout << "New connection added between " << ntohs(cur_addr.sin_port) << " and " << ntohs(peer_addr.sin_port) << "..." << endl;
 
 	char buff[MAX_SIZE];
-	recv(new_conn_fd, buff, MAX_SIZE, 0);
+	receive_msg(new_conn_fd, buff, MAX_SIZE, 0);
 	int cur_ngb_id = strtol(buff, NULL, 10);
-	sprintf(buff, "%d", switch_id);
-	send(new_conn_fd, buff, sizeof buff, 0);
+	sprintf(buff, "#%d#", switch_id);
+	send(new_conn_fd, buff, strlen(buff)+1, 0);
 
 	ngb_fds[num_ngb] = new_conn_fd;
 	ngb_ids[num_ngb] = cur_ngb_id;
@@ -271,12 +286,14 @@ void *connect_to_controller(void *dummy_arg) {
 	if(connect(controller_fd, (struct sockaddr *) &controller_addr, controller_addr_sz) == 0) {
 		cout << "Connected to controller successfully..." << endl;
 		char msg_to_controller[MAX_SIZE];
-		sprintf(msg_to_controller, "%d", listen_port);
-		send(controller_fd, msg_to_controller, sizeof msg_to_controller, 0);
+		sprintf(msg_to_controller, "#%d#", listen_port);
+		send(controller_fd, msg_to_controller, strlen(msg_to_controller)+1, 0);
 		while(1) {
 			char msg_from_controller[MAX_SIZE];
 			memset(msg_from_controller, '\0', sizeof msg_from_controller);
-			recv(controller_fd, msg_from_controller, MAX_SIZE, 0);
+			int msg_sz = receive_msg(controller_fd, msg_from_controller, MAX_SIZE, 0);
+			if(msg_sz == 0)
+				continue;
 			cout << "Received new message from controller:" << endl;
 			cout << msg_from_controller << endl;
 			char *token = strtok(msg_from_controller, "::");
@@ -292,14 +309,19 @@ void *connect_to_controller(void *dummy_arg) {
 				int dstn_port = strtol(token, NULL, 10);
 				cout << "Flow id: " << flow_id << " Src port: " << src_port << " Dstn port: " << dstn_port << endl;
 				add_new_flow_table_entry(flow_id, src_port, dstn_port);
-				string new_flow_rule = to_string(flow_id) + "::" + to_string(src_port) + "::" + to_string(dstn_port);
-				recent_hash = sha256(recent_hash + new_flow_rule);
+
 				char ack_msg[MAX_SIZE];
-				if(secure_switch == 1)
-					sprintf(ack_msg, "0::%s", recent_hash.c_str());
+				if(secure_switch == 1) {
+					pthread_mutex_lock(&recent_hash_mutex);
+					string new_flow_rule = to_string(flow_id) + "::" + to_string(src_port) + "::" + to_string(dstn_port);
+					recent_hash = sha256(recent_hash + new_flow_rule);
+					pthread_mutex_unlock(&recent_hash_mutex);
+					sprintf(ack_msg, "#0::%s#", recent_hash.c_str());
+				}
 				else
-					sprintf(ack_msg, "0");
-				send(controller_fd, ack_msg, sizeof ack_msg, 0);
+					sprintf(ack_msg, "#0#");
+				cout << "Message to be sent to controller: " << ack_msg << endl;
+				send(controller_fd, ack_msg, strlen(ack_msg)+1, 0);
 				break;
 			}
 			case 2: {

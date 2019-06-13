@@ -4,7 +4,7 @@
 #include "../interfaces/switch_interface.h"
 #include "../interfaces/host_interface.h"
 
-#define SLEEP_TIME 20000
+#define SLEEP_TIME 50000
 
 using namespace std;
 
@@ -58,10 +58,12 @@ int main(int argc, char *argv[]) {
 	switch1_pid = start_switch(secure_sdn, &switch1_port);
 	connect_switch_to_controller(controller_port, switch1_pid);
 	switch1_id = 0;
+	usleep(SLEEP_TIME);
 
 	switch2_pid = start_switch(secure_sdn, &switch2_port);
 	connect_switch_to_controller(controller_port, switch2_pid);
 	switch2_id = 1;
+	usleep(SLEEP_TIME);
 
 	host1_start_id = 2;
 	cout << "Starting " << num_hosts << " hosts and connecting them to switch 1..." << endl;
@@ -85,6 +87,7 @@ int main(int argc, char *argv[]) {
 
 	cout << "Connecting Switch 1 and 2..." << endl;
 	add_new_connection(switch2_port, switch1_pid);
+	usleep(SLEEP_TIME);
 	cout << "Topology completed..." << endl << endl;
 
 	cout << "Adding flows from every host with switch 1 to corresponding host with switch 2..." << endl;
@@ -96,7 +99,7 @@ int main(int argc, char *argv[]) {
 		int path[] = {host1_start_id+i, switch1_id, switch2_id, host2_start_id+i};
 		add_new_flow(4, path, &cur_usec, &cur_data);
 		cout << "Added flow " << i << " of length 4 in " << cur_usec << "microseconds" << endl;
-		usleep(SLEEP_TIME);
+		usleep(5*SLEEP_TIME);
 		flow_time_usec += cur_usec;
 		data_sent += cur_data;
 	}
@@ -118,6 +121,7 @@ int main(int argc, char *argv[]) {
 		total_msg_time += all_msg_times[i];
 
 	cout << endl << "Network statistics:" << endl;
+	cout << "Total number of flows: " << num_hosts << endl;
 	cout << "Total time to add " << num_hosts << " flows of length 4: " << flow_time_usec << " us" << endl;
 	cout << "Total network data sent to add all flows: " << data_sent << " bytes" << endl;
 	cout << "Total number of network packets sent to add all flows: " << 2*num_hosts << endl;
@@ -127,6 +131,7 @@ int main(int argc, char *argv[]) {
 	cout << "Average network data sent to add a single flow of length 4: " << data_sent/num_hosts << " bytes" << endl;
 	cout << "Average number of network packets sent to add a single flow of length 4: " << 2 << endl;
 	cout << "Average time for message propagation: " << total_msg_time / (double)num_hosts << " us" << endl;
+	cout << "Average flow length: 4" << endl;
 
 	return 0;
 }
