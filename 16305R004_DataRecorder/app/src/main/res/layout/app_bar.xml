@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.Toolbar 
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/my_toolbar"
+    android:layout_width="match_parent"
+    android:layout_height="?attr/actionBarSize"
+    android:background="?attr/colorPrimary"
+    android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal"
+        android:weightSum="1">
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_weight="0.16"
+            android:layout_height="match_parent"
+            android:background="@drawable/logo"
+            android:scaleType="fitXY"
+            android:contentDescription="@string/app_logo"
+            android:id="@+id/app_logo_button"/>
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_weight="0.68"
+            android:gravity="center_vertical"
+            android:layout_height="match_parent"
+            android:text="@string/app_title"
+            android:textSize="@dimen/title_text_size"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="@dimen/main_padding"
+            android:id="@+id/navigation_spinner"/>
+
+        <ImageButton
+            android:layout_width="0dp"
+            android:layout_weight="0.16"
+            android:layout_height="match_parent"
+            android:background="@drawable/start_recording"
+            android:contentDescription="@string/start_recording"
+            android:scaleType="fitXY"
+            android:id="@+id/start_recording_button"/>
+
+    </LinearLayout>
+
+</android.support.v7.widget.Toolbar>

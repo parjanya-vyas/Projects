@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">16305R004_DataRecorder</string>
+    <string name="app_title">Data Recorder</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="email">Email</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="age">Age</string>
+    <string name="gender">Gender</string>
+    <string name="male">Male</string>
+    <string name="female">Female</string>
+    <string name="other">Other</string>
+    <string name="submit">Submit</string>
+    <string name="app_logo">App Logo</string>
+    <string name="start_recording">Start Recording</string>
+    <string name="accelerometer">Accelerometer</string>
+    <string name="gps">GPS</string>
+    <string name="list_of_last_five_recordings">List of last five recordings</string>
+    <string name="empty">&lt;Empty&gt;</string>
+    <string name="label">Label</string>
+    <string-array name="navigation_items">
+        <item>Login</item>
+        <item>Sensors</item>
+        <item>Recordings</item>
+    </string-array>
+    <string-array name="label_spinner_items">
+        <item>Stationary</item>
+        <item>Walking</item>
+    </string-array>
+</resources>
